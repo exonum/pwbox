@@ -2,8 +2,8 @@
 /* eslint-env node, mocha */
 
 const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
+chai.use(require('chai-as-promised'));
+chai.use(require('dirty-chai'));
 const expect = chai.expect;
 
 const pwbox = require('..');
@@ -40,7 +40,7 @@ function describeImplementation (pwbox, cryptoName) {
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
       });
-      expect(immediateResult).to.be.undefined;
+      expect(immediateResult).to.be.undefined();
     });
 
     it('should run with callback and options', function (done) {
@@ -53,7 +53,7 @@ function describeImplementation (pwbox, cryptoName) {
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
       });
-      expect(immediateResult).to.be.undefined;
+      expect(immediateResult).to.be.undefined();
     });
 
     // TODO test opslimit and memlimit verification
@@ -80,26 +80,26 @@ function describeImplementation (pwbox, cryptoName) {
 
     it('should fail on incorrect algo id with promise', function () {
       var opened = pwbox.open(invalidAlgoBox, password);
-      expect(opened).to.eventually.be.false;
+      expect(opened).to.eventually.be.false();
       return opened;
     });
 
     it('should fail on incorrect algo id with callback', function (done) {
       pwbox.open(invalidAlgoBox, password, opened => {
-        expect(opened).to.be.false;
+        expect(opened).to.be.false();
         done();
       });
     });
 
     it('should fail on corrupted input with promise', function () {
       var opened = pwbox.open(corruptedBox, password);
-      expect(opened).to.eventually.be.false;
+      expect(opened).to.eventually.be.false();
       return opened;
     });
 
     it('should fail on corrupted input with callback', function (done) {
       pwbox.open(corruptedBox, password, opened => {
-        expect(opened).to.be.false;
+        expect(opened).to.be.false();
         done();
       });
     });
