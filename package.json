@@ -9,7 +9,9 @@
   ],
   "private": true,
   "scripts": {
-    "test": "mocha test/test.all.js"
+    "test": "mocha test/test.all.js",
+    "lint": "semistandard",
+    "browser": "browserify lite.js | uglifyjs -o pwbox-lite.min.js"
   },
   "keywords": [
     "crypto",
