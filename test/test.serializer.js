@@ -56,6 +56,7 @@ describe('serializer', function() {
       expect(s.subarray(8, 12)).to.deep.equal(new Uint8Array([
         129, 2, 255, 4
       ]));
+      obj.algorithm.opslimit = 524288; // return to old value
     });
 
     it('should serialize memlimit as LE 32-bit value', function() {
@@ -69,6 +70,7 @@ describe('serializer', function() {
       expect(s.subarray(12, 16)).to.deep.equal(new Uint8Array([
         129, 2, 255, 4
       ]));
+      obj.algorithm.memlimit = 16777216; // return to old value
     });
 
     it('should leave salt intact during serialization', function() {
