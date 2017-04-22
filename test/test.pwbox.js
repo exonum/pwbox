@@ -64,23 +64,29 @@ describe('pwbox.withCrypto(' + cryptoName + ').open', function() {
 
   var message = new Uint8Array([ 65, 66, 67 ]);
   var box = new Uint8Array(); // initialized in `before`
+  var corruptedBox = new Uint8Array();
+  var invalidAlgoBox = new Uint8Array();
   var password = 'pleaseletmein';
 
   before(function() {
-    return pwbox(message, password).then(b => { box = b; });
+    return pwbox(message, password, {
+      salt: new Uint8Array(pwbox.saltLength)
+    }).then(b => {
+      box = b;
+      corruptedBox = new Uint8Array(box);
+      corruptedBox[pwbox.overheadLength + 1] = 255 - corruptedBox[pwbox.overheadLength + 1];
+      invalidAlgoBox = new Uint8Array(box);
+      invalidAlgoBox[0] = 20;
+    });
   });
 
   it('should fail on incorrect algo id with promise', function() {
-    var invalidAlgoBox = box.slice();
-    invalidAlgoBox[0] = 20;
     var opened = pwbox.open(invalidAlgoBox, password);
     expect(opened).to.eventually.be.false;
     return opened;
   });
 
   it('should fail on incorrect algo id with callback', function(done) {
-    var invalidAlgoBox = box.slice();
-    invalidAlgoBox[0] = 20;
     pwbox.open(invalidAlgoBox, password, opened => {
       expect(opened).to.be.false;
       done();
@@ -88,17 +94,12 @@ describe('pwbox.withCrypto(' + cryptoName + ').open', function() {
   });
 
   it('should fail on corrupted input with promise', function() {
-    var corruptedBox = box.slice();
-    corruptedBox[pwbox.overheadLength + 1] = 255 - corruptedBox[pwbox.overheadLength + 1];
-    var opened = pwbox.open(box, password);
+    var opened = pwbox.open(corruptedBox, password);
     expect(opened).to.eventually.be.false;
     return opened;
   });
 
   it('should fail on corrupted input with callback', function(done) {
-    var corruptedBox = box.slice();
-    corruptedBox[pwbox.overheadLength + 1] = 255 - corruptedBox[pwbox.overheadLength + 1];
-
     pwbox.open(corruptedBox, password, opened => {
       expect(opened).to.be.false;
       done();
@@ -125,10 +126,10 @@ describe('pwbox.withCrypto(' + cryptoName + ').open', function() {
     message,
     'correct horse battery staple correct horse battery staple correct horse battery staple correct horse battery staple');
 
-  /*describeTwoWayOp(
+  describeTwoWayOp(
     'should work with long messages',
-    new Uint8Array(100000),
-    password);*/
+    new Uint8Array(10000),
+    password);
 
   describeTwoWayOp(
     'should work with utf-8 passwords',
@@ -170,20 +171,23 @@ describe('pwbox compatibility', function() {
     });
   });
 
-  it('should yield same results on both backends with custom memlimit and/or opslimit', function() {
-    var testVectors = [
-      { opslimit: pwbox.defaultOpslimit / 2 },
-      { opslimit: pwbox.defaultOpslimit * 2 },
-      { memlimit: pwbox.defaultMemlimit / 2 },
-      { memlimit: pwbox.defaultMemlimit * 2 },
-      { opslimit: pwbox.defaultOpslimit / 2, memlimit: pwbox.defaultMemlimit * 2 },
-      { opslimit: pwbox.defaultOpslimit * 2, memlimit: pwbox.defaultMemlimit / 2 },
-    ];
+  var testVectors = [
+    { opslimit: pwbox.defaultOpslimit / 2 },
+    { opslimit: pwbox.defaultOpslimit * 2 },
+    { memlimit: pwbox.defaultMemlimit / 2 },
+    { memlimit: pwbox.defaultMemlimit * 2 },
+    { opslimit: pwbox.defaultOpslimit / 2, memlimit: pwbox.defaultMemlimit * 2 },
+    { opslimit: pwbox.defaultOpslimit * 2, memlimit: pwbox.defaultMemlimit / 2 },
+  ];
 
-    var jobs = testVectors.map(vector => {
-      var opts = Object.assign({
-        salt: new Uint8Array(pwbox.saltLength)
-      }, vector);
+  testVectors.forEach(vector => {
+    var opts = Object.assign({
+      salt: new Uint8Array(pwbox.saltLength)
+    }, vector);
+
+    it('should yield same results on both backends with ' +
+      'opslimit = ' + opts.opslimit +
+      ', memlimit = ' + opts.memlimit, function() {
 
       return Promise.all([
         pwbox(message, password, opts),
@@ -191,11 +195,7 @@ describe('pwbox compatibility', function() {
       ]).then(results => {
         var tweetBox = results[0], sodiumBox = results[1];
         expect(tweetBox).to.deep.equal(sodiumBox);
-        //console.log(tweetBox);
-        //console.log(sodiumBox);
       });
     });
-
-    return Promise.all(jobs);
   });
 });
