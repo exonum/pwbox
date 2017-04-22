@@ -1,0 +1,12 @@
+{
+  "secretbox": {
+    "overheadLength": 16,
+    "keyLength": 32,
+    "nonceLength": 24
+  },
+  "scrypt": {
+    "saltLength": 32,
+    "defaultOpslimit": 524288,
+    "defaultMemlimit": 16777216
+  }
+}
