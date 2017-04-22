@@ -1,14 +1,14 @@
 'use strict';
+/* eslint-env node, mocha */
 
 const expect = require('chai').expect;
 const serializer = require('../lib/serializer');
 
-describe('serializer', function() {
-
+describe('serializer', function () {
   // Serializable object
   var obj = {
     algorithm: {
-      id: "scrypt",
+      id: 'scrypt',
       opslimit: 524288,
       memlimit: 16777216
     },
@@ -16,22 +16,21 @@ describe('serializer', function() {
     ciphertext: new Uint8Array(40)
   };
 
-  for (var i = 0; i < obj.salt.length; i++) {
+  for (let i = 0; i < obj.salt.length; i++) {
     obj.salt[i] = i;
   }
-  for (var i = 0; i < obj.ciphertext.length; i++) {
+  for (let i = 0; i < obj.ciphertext.length; i++) {
     obj.ciphertext[i] = 255 - i;
   }
 
-  describe('serialize', function() {
-
-    it('should serialize into an array of correct size', function() {
+  describe('serialize', function () {
+    it('should serialize into an array of correct size', function () {
       var s = serializer.serialize(obj);
       expect(s).to.be.a('uint8array');
       expect(s).to.have.lengthOf(48 + obj.ciphertext.length);
     });
 
-    it('should serialize algo id with trailing zeros', function() {
+    it('should serialize algo id with trailing zeros', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(0, 8)).to.deep.equal(new Uint8Array([
         115, // s
@@ -45,7 +44,7 @@ describe('serializer', function() {
       ]));
     });
 
-    it('should serialize opslimit as LE 32-bit value', function() {
+    it('should serialize opslimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(8, 12)).to.deep.equal(new Uint8Array([
         0, 0, 8, 0
@@ -59,7 +58,7 @@ describe('serializer', function() {
       obj.algorithm.opslimit = 524288; // return to old value
     });
 
-    it('should serialize memlimit as LE 32-bit value', function() {
+    it('should serialize memlimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(12, 16)).to.deep.equal(new Uint8Array([
         0, 0, 0, 1
@@ -73,27 +72,26 @@ describe('serializer', function() {
       obj.algorithm.memlimit = 16777216; // return to old value
     });
 
-    it('should leave salt intact during serialization', function() {
+    it('should leave salt intact during serialization', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(16, 48)).to.deep.equal(obj.salt);
     });
 
-    it('should leave ciphertext intact during serialization', function() {
+    it('should leave ciphertext intact during serialization', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(48, 88)).to.deep.equal(obj.ciphertext);
     });
   });
 
-  describe('deserialize', function() {
-
-    it('should throw if buffer length is insufficient', function() {
+  describe('deserialize', function () {
+    it('should throw if buffer length is insufficient', function () {
       for (var i = 0; i < serializer.overheadLength; i++) {
         var buffer = new Uint8Array(i);
-        expect(function() { serializer.deserialize(buffer); }).to.throw(Error, /insufficient/i);
+        expect(function () { serializer.deserialize(buffer); }).to.throw(Error, /insufficient/i);
       }
     });
 
-    it('should deserialize into object with correct structure', function() {
+    it('should deserialize into object with correct structure', function () {
       var buffer = new Uint8Array(100);
       var deser = serializer.deserialize(buffer);
       expect(deser).to.have.property('algorithm');
@@ -109,7 +107,7 @@ describe('serializer', function() {
       expect(deser.ciphertext).to.be.a('uint8array');
     });
 
-    it('should remove trailing zeros in algo id', function() {
+    it('should remove trailing zeros in algo id', function () {
       var buffer = new Uint8Array(100);
       buffer[0] = 65; // A
       buffer[1] = 66; // B

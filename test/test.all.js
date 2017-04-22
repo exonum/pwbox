@@ -1,3 +1,3 @@
-const testConstants = require('./test.constants');
-const testSerializer = require('./test.serializer');
-const testPwbox = require('./test.pwbox');
+require('./test.constants');
+require('./test.serializer');
+require('./test.pwbox');
