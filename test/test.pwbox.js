@@ -58,6 +58,17 @@ function describeImplementation (pwbox, cryptoName) {
       expect(immediateResult).to.be.undefined();
     });
 
+    // See more about Zalgo here: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
+    it('should not release Zalgo', function (done) {
+      var after = false;
+      pwbox(message, password, function (err, result) {
+        expect(err).to.not.exist();
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
     // TODO test opslimit and memlimit verification
   });
 
