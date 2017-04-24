@@ -117,6 +117,36 @@ function describeImplementation (pwbox, cryptoName) {
       });
     });
 
+    it('should not release Zalgo', function (done) {
+      var after = false;
+      pwbox.open(box, password, function (err, result) {
+        expect(err).to.not.exist();
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
+    it('should not release Zalgo if supplied with invalid algo id', function (done) {
+      var after = false;
+      pwbox.open(invalidAlgoBox, password, function (err, result) {
+        expect(err).to.be.instanceof(Error);
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
+    it('should not release Zalgo if supplied with corrupted box', function (done) {
+      var after = false;
+      pwbox.open(corruptedBox, password, function (err, result) {
+        expect(err).to.be.instanceof(Error);
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
     function describeTwoWayOp (testName, message, password) {
       it(testName, function () {
         var promise = pwbox(message, password).then(box => {
