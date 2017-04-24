@@ -35,7 +35,8 @@ function describeImplementation (pwbox, cryptoName) {
     });
 
     it('should run with callback and no options', function (done) {
-      var immediateResult = pwbox(message, password, function (result) {
+      var immediateResult = pwbox(message, password, function (err, result) {
+        expect(err).to.not.exist();
         expect(result).to.be.a('uint8array');
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
@@ -48,7 +49,8 @@ function describeImplementation (pwbox, cryptoName) {
         opslimit: 1 << 21
       };
 
-      var immediateResult = pwbox(message, password, opts, function (result) {
+      var immediateResult = pwbox(message, password, opts, function (err, result) {
+        expect(err).to.not.exist();
         expect(result).to.be.a('uint8array');
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
@@ -80,26 +82,26 @@ function describeImplementation (pwbox, cryptoName) {
 
     it('should fail on incorrect algo id with promise', function () {
       var opened = pwbox.open(invalidAlgoBox, password);
-      expect(opened).to.eventually.be.false();
-      return opened;
+      return expect(opened).to.be.rejectedWith(Error, /algorithm/i);
     });
 
     it('should fail on incorrect algo id with callback', function (done) {
-      pwbox.open(invalidAlgoBox, password, opened => {
-        expect(opened).to.be.false();
+      pwbox.open(invalidAlgoBox, password, (err, opened) => {
+        expect(err).to.be.instanceof(Error);
+        expect(err.message).to.match(/algorithm/i);
         done();
       });
     });
 
     it('should fail on corrupted input with promise', function () {
       var opened = pwbox.open(corruptedBox, password);
-      expect(opened).to.eventually.be.false();
-      return opened;
+      return expect(opened).to.be.rejectedWith(Error, /corrupted/i);
     });
 
     it('should fail on corrupted input with callback', function (done) {
-      pwbox.open(corruptedBox, password, opened => {
-        expect(opened).to.be.false();
+      pwbox.open(corruptedBox, password, (err, opened) => {
+        expect(err).to.be.instanceof(Error);
+        expect(err.message).to.match(/corrupted/i);
         done();
       });
     });
