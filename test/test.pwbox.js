@@ -70,6 +70,22 @@ function describeImplementation (pwbox, cryptoName) {
     });
 
     // TODO test opslimit and memlimit verification
+
+    describe('orFalse', function () {
+      // TODO add test when pwbox starts returning errors
+
+      it('should return result as the first argument in callback', function (done) {
+        pwbox.orFalse(message, password, function (result) {
+          expect(result).to.be.a('uint8array');
+          done();
+        });
+      });
+
+      it('should not accept non-callback interface', function () {
+        expect(() => { pwbox.open.orFalse(message, password); })
+          .to.throw(TypeError);
+      });
+    });
   });
 
   describe('pwbox.withCrypto(' + cryptoName + ').open', function () {
@@ -177,6 +193,27 @@ function describeImplementation (pwbox, cryptoName) {
       message,
       'пуститепожалуйста'
     );
+
+    describe('orFalse', function () {
+      it('should return false on error', function (done) {
+        pwbox.open.orFalse(corruptedBox, password, function (result) {
+          expect(result).to.be.false();
+          done();
+        });
+      });
+
+      it('should return result as the first argument in callback', function (done) {
+        pwbox.open.orFalse(box, password, function (result) {
+          expect(result).to.be.deep.equal(message);
+          done();
+        });
+      });
+
+      it('should not accept non-callback interface', function () {
+        expect(() => { pwbox.open.orFalse(box, password); })
+          .to.throw(TypeError);
+      });
+    });
   });
 }
 
