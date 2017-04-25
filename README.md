@@ -1,4 +1,4 @@
-# Passphrase-based Encryption for Node and Browsers
+# Password-Based Encryption for Node and Browsers
 
 pwbox is just like NaCl/libsodium's built-in `secretbox`, only it implements
 encryption based on passwords rather on secret keys.
@@ -7,9 +7,9 @@ Behind the scenes, pwbox uses crypto-primitves from NaCl/libsodium:
   * `pwhash_scryptsalsa208sha256` for key derivation
   * `secretbox` routines for key-based symmetric encryption
   
-**Security Notice.** Use this software at your own risk. You should think twice
+**Security Notice.** Use this software at your own risk. You should think carefully
 before using this (or any other) software to ensure browser-based client-side
-security; browser environments are notoriously unsecure.
+security; browser environments are somewhat unsecure.
 
 ## Getting Started
 
@@ -77,7 +77,7 @@ with a comfortable 100ms delay in Node, and slightly more in browsers.
 
 ### Backends
 
-pwbox may use one of the following backends:
+pwbox may use one of the following cryptography backends:
   * [libsodium-wrappers-sumo][libsodium]
   * [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
   
