@@ -5,6 +5,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 chai.use(require('dirty-chai'));
 const expect = chai.expect;
+const objectAssign = Object.assign || require('object-assign');
 
 const pwbox = require('..');
 const sodiumPwbox = pwbox.withCrypto('libsodium');
@@ -258,7 +259,7 @@ describe('pwbox compatibility', function () {
   ];
 
   testVectors.forEach(vector => {
-    var opts = Object.assign({
+    var opts = objectAssign({
       salt: new Uint8Array(pwbox.saltLength)
     }, vector);
 
