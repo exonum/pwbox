@@ -2,6 +2,7 @@
 /* eslint-env node, mocha */
 
 const chai = require('chai');
+chai.use(require('./chai-equal-array'));
 chai.use(require('chai-as-promised'));
 chai.use(require('dirty-chai'));
 const expect = chai.expect;
@@ -191,7 +192,7 @@ function describeImplementation (pwbox, cryptoName) {
         var promise = pwbox(message, password, TEST_OPTIONS).then(box => {
           return pwbox.open(box, password);
         });
-        expect(promise).to.eventually.deep.equal(message);
+        expect(promise).to.eventually.equalArray(message);
         return promise;
       });
     }
@@ -227,7 +228,7 @@ function describeImplementation (pwbox, cryptoName) {
 
       it('should return result as the first argument in callback', function (done) {
         pwbox.open.orFalse(box, password, function (result) {
-          expect(result).to.be.deep.equal(message);
+          expect(result).to.be.equalArray(message);
           done();
         });
       });
@@ -269,7 +270,7 @@ describe('pwbox compatibility', function () {
     ]).then(results => {
       var tweetBox = results[0];
       var sodiumBox = results[1];
-      expect(tweetBox).to.deep.equal(sodiumBox);
+      expect(tweetBox).to.equalArray(sodiumBox);
     });
   });
 
@@ -298,7 +299,7 @@ describe('pwbox compatibility', function () {
         ]).then(results => {
           var tweetBox = results[0];
           var sodiumBox = results[1];
-          expect(tweetBox).to.deep.equal(sodiumBox);
+          expect(tweetBox).to.equalArray(sodiumBox);
         });
       });
   });

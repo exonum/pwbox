@@ -1,7 +1,10 @@
 'use strict';
 /* eslint-env node, mocha */
 
-const expect = require('chai').expect;
+const chai = require('chai');
+chai.use(require('./chai-equal-array'));
+const expect = chai.expect;
+
 const serializer = require('../lib/serializer');
 
 describe('serializer', function () {
@@ -32,7 +35,7 @@ describe('serializer', function () {
 
     it('should serialize algo id with trailing zeros', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(0, 8)).to.deep.equal(new Uint8Array([
+      expect(s.subarray(0, 8)).to.equalArray([
         115, // s
         99,  // c
         114, // r
@@ -41,18 +44,18 @@ describe('serializer', function () {
         116, // t
         0,   // trailing zeros
         0
-      ]));
+      ]);
     });
 
     it('should serialize opslimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(8, 12)).to.deep.equal(new Uint8Array([
+      expect(s.subarray(8, 12)).to.equalArray(new Uint8Array([
         0, 0, 8, 0
       ]));
 
       obj.algorithm.opslimit = 129 + (2 << 8) + (255 << 16) + (4 << 24);
       s = serializer.serialize(obj);
-      expect(s.subarray(8, 12)).to.deep.equal(new Uint8Array([
+      expect(s.subarray(8, 12)).to.equalArray(new Uint8Array([
         129, 2, 255, 4
       ]));
       obj.algorithm.opslimit = 524288; // return to old value
@@ -60,13 +63,13 @@ describe('serializer', function () {
 
     it('should serialize memlimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(12, 16)).to.deep.equal(new Uint8Array([
+      expect(s.subarray(12, 16)).to.equalArray(new Uint8Array([
         0, 0, 0, 1
       ]));
 
       obj.algorithm.memlimit = 129 + (2 << 8) + (255 << 16) + (4 << 24);
       s = serializer.serialize(obj);
-      expect(s.subarray(12, 16)).to.deep.equal(new Uint8Array([
+      expect(s.subarray(12, 16)).to.equalArray(new Uint8Array([
         129, 2, 255, 4
       ]));
       obj.algorithm.memlimit = 16777216; // return to old value
@@ -74,12 +77,12 @@ describe('serializer', function () {
 
     it('should leave salt intact during serialization', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(16, 48)).to.deep.equal(obj.salt);
+      expect(s.subarray(16, 48)).to.equalArray(obj.salt);
     });
 
     it('should leave ciphertext intact during serialization', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(48, 88)).to.deep.equal(obj.ciphertext);
+      expect(s.subarray(48, 88)).to.equalArray(obj.ciphertext);
     });
   });
 
