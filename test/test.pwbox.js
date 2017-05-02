@@ -11,9 +11,29 @@ const pwbox = require('..');
 const sodiumPwbox = pwbox.withCrypto('libsodium');
 const cryptoTweetnacl = require('../lib/crypto-tweetnacl');
 
+// low-effort scrypt settings for testing
+const TEST_OPTIONS = {
+  opslimit: 1 << 16,
+  memlimit: 1 << 20
+};
+
+const Assertion = require('chai').Assertion;
+Assertion.addMethod('arrayEqual', function (expected) {
+  var actual = this._obj;
+  this.assert(
+    expected.length === actual.length &&
+      actual.every((x, i) => (expected[i] === actual[i])),
+    'expected #{this} to equal #{exp}',
+    'exepected #{this} to not equal #{exp}',
+    expected
+  );
+});
+
 // Describes a specific crypto implementation
 function describeImplementation (pwbox, cryptoName) {
   describe('pwbox.withCrypto(' + cryptoName + ')', function () {
+    this.timeout(0);
+
     var message = new Uint8Array([ 65, 66, 67 ]);
     var password = 'pleaseletmein';
 
@@ -27,7 +47,7 @@ function describeImplementation (pwbox, cryptoName) {
 
     it('should run with promise and options', function () {
       var promise = pwbox(message, password, {
-        opslimit: 1 << 21
+        opslimit: 1 << 17
       });
       expect(promise).to.be.instanceof(Promise);
       expect(promise).to.eventually.be.a('uint8array');
@@ -47,7 +67,7 @@ function describeImplementation (pwbox, cryptoName) {
 
     it('should run with callback and options', function (done) {
       var opts = {
-        opslimit: 1 << 21
+        opslimit: 1 << 17
       };
 
       var immediateResult = pwbox(message, password, opts, function (err, result) {
@@ -62,7 +82,7 @@ function describeImplementation (pwbox, cryptoName) {
     // See more about Zalgo here: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
     it('should not release Zalgo', function (done) {
       var after = false;
-      pwbox(message, password, function (err, result) {
+      pwbox(message, password, TEST_OPTIONS, function (err, result) {
         expect(err).to.not.exist();
         expect(after).to.be.true();
         done();
@@ -76,7 +96,7 @@ function describeImplementation (pwbox, cryptoName) {
       // TODO add test when pwbox starts returning errors
 
       it('should return result as the first argument in callback', function (done) {
-        pwbox.orFalse(message, password, function (result) {
+        pwbox.orFalse(message, password, TEST_OPTIONS, function (result) {
           expect(result).to.be.a('uint8array');
           done();
         });
@@ -90,6 +110,8 @@ function describeImplementation (pwbox, cryptoName) {
   });
 
   describe('pwbox.withCrypto(' + cryptoName + ').open', function () {
+    this.timeout(0);
+
     var message = new Uint8Array([ 65, 66, 67 ]);
     var box = new Uint8Array(); // initialized in `before`
     var corruptedBox = new Uint8Array();
@@ -97,9 +119,9 @@ function describeImplementation (pwbox, cryptoName) {
     var password = 'pleaseletmein';
 
     before(function () {
-      return pwbox(message, password, {
+      return pwbox(message, password, objectAssign({}, TEST_OPTIONS, {
         salt: new Uint8Array(pwbox.saltLength)
-      }).then(b => {
+      })).then(b => {
         box = b;
         corruptedBox = new Uint8Array(box);
         corruptedBox[pwbox.overheadLength + 1] = 255 - corruptedBox[pwbox.overheadLength + 1];
@@ -166,7 +188,7 @@ function describeImplementation (pwbox, cryptoName) {
 
     function describeTwoWayOp (testName, message, password) {
       it(testName, function () {
-        var promise = pwbox(message, password).then(box => {
+        var promise = pwbox(message, password, TEST_OPTIONS).then(box => {
           return pwbox.open(box, password);
         });
         expect(promise).to.eventually.deep.equal(message);
@@ -222,6 +244,8 @@ describeImplementation(pwbox, 'tweetnacl');
 describeImplementation(sodiumPwbox, 'libsodium');
 
 describe('pwbox compatibility', function () {
+  this.timeout(0);
+
   var message = new Uint8Array([ 65, 66, 67 ]);
   var password = 'pleaseletmein';
 
