@@ -35,7 +35,8 @@ function describeImplementation (pwbox, cryptoName) {
     });
 
     it('should run with callback and no options', function (done) {
-      var immediateResult = pwbox(message, password, function (result) {
+      var immediateResult = pwbox(message, password, function (err, result) {
+        expect(err).to.not.exist();
         expect(result).to.be.a('uint8array');
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
@@ -48,7 +49,8 @@ function describeImplementation (pwbox, cryptoName) {
         opslimit: 1 << 21
       };
 
-      var immediateResult = pwbox(message, password, opts, function (result) {
+      var immediateResult = pwbox(message, password, opts, function (err, result) {
+        expect(err).to.not.exist();
         expect(result).to.be.a('uint8array');
         expect(result).to.have.lengthOf(3 + pwbox.overheadLength);
         done();
@@ -56,7 +58,34 @@ function describeImplementation (pwbox, cryptoName) {
       expect(immediateResult).to.be.undefined();
     });
 
+    // See more about Zalgo here: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
+    it('should not release Zalgo', function (done) {
+      var after = false;
+      pwbox(message, password, function (err, result) {
+        expect(err).to.not.exist();
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
     // TODO test opslimit and memlimit verification
+
+    describe('orFalse', function () {
+      // TODO add test when pwbox starts returning errors
+
+      it('should return result as the first argument in callback', function (done) {
+        pwbox.orFalse(message, password, function (result) {
+          expect(result).to.be.a('uint8array');
+          done();
+        });
+      });
+
+      it('should not accept non-callback interface', function () {
+        expect(() => { pwbox.open.orFalse(message, password); })
+          .to.throw(TypeError);
+      });
+    });
   });
 
   describe('pwbox.withCrypto(' + cryptoName + ').open', function () {
@@ -80,28 +109,58 @@ function describeImplementation (pwbox, cryptoName) {
 
     it('should fail on incorrect algo id with promise', function () {
       var opened = pwbox.open(invalidAlgoBox, password);
-      expect(opened).to.eventually.be.false();
-      return opened;
+      return expect(opened).to.be.rejectedWith(Error, /algorithm/i);
     });
 
     it('should fail on incorrect algo id with callback', function (done) {
-      pwbox.open(invalidAlgoBox, password, opened => {
-        expect(opened).to.be.false();
+      pwbox.open(invalidAlgoBox, password, (err, opened) => {
+        expect(err).to.be.instanceof(Error);
+        expect(err.message).to.match(/algorithm/i);
         done();
       });
     });
 
     it('should fail on corrupted input with promise', function () {
       var opened = pwbox.open(corruptedBox, password);
-      expect(opened).to.eventually.be.false();
-      return opened;
+      return expect(opened).to.be.rejectedWith(Error, /corrupted/i);
     });
 
     it('should fail on corrupted input with callback', function (done) {
-      pwbox.open(corruptedBox, password, opened => {
-        expect(opened).to.be.false();
+      pwbox.open(corruptedBox, password, (err, opened) => {
+        expect(err).to.be.instanceof(Error);
+        expect(err.message).to.match(/corrupted/i);
         done();
       });
+    });
+
+    it('should not release Zalgo', function (done) {
+      var after = false;
+      pwbox.open(box, password, function (err, result) {
+        expect(err).to.not.exist();
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
+    it('should not release Zalgo if supplied with invalid algo id', function (done) {
+      var after = false;
+      pwbox.open(invalidAlgoBox, password, function (err, result) {
+        expect(err).to.be.instanceof(Error);
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
+    });
+
+    it('should not release Zalgo if supplied with corrupted box', function (done) {
+      var after = false;
+      pwbox.open(corruptedBox, password, function (err, result) {
+        expect(err).to.be.instanceof(Error);
+        expect(after).to.be.true();
+        done();
+      });
+      after = true;
     });
 
     function describeTwoWayOp (testName, message, password) {
@@ -134,6 +193,27 @@ function describeImplementation (pwbox, cryptoName) {
       message,
       'пуститепожалуйста'
     );
+
+    describe('orFalse', function () {
+      it('should return false on error', function (done) {
+        pwbox.open.orFalse(corruptedBox, password, function (result) {
+          expect(result).to.be.false();
+          done();
+        });
+      });
+
+      it('should return result as the first argument in callback', function (done) {
+        pwbox.open.orFalse(box, password, function (result) {
+          expect(result).to.be.deep.equal(message);
+          done();
+        });
+      });
+
+      it('should not accept non-callback interface', function () {
+        expect(() => { pwbox.open.orFalse(box, password); })
+          .to.throw(TypeError);
+      });
+    });
   });
 }
 

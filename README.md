@@ -31,21 +31,33 @@ pwbox(message, password).then(box => {
 });
 ```
 
-Because `scrypt` function is purposely computationally intensive,
-calls are asynchronous; they support either callbacks or promises.
-
+`pwbox` calls are asynchronous; they support either callbacks or promises.
 The same example as above, with callbacks.
 ```javascript
 var password = 'pleaseletmein';
 var message = new Uint8Array([ 65, 66, 67 ]);
 
-pwbox(message, password, function(box) {
+pwbox(message, password, function (err, box) {
   console.log(box);
-  pwbox.open(box, password, function(opened) {
+  pwbox.open(box, password, function (err, opened) {
     console.log(opened);
   });
 });
 ```
+
+You may also invoke `pwbox` and `pwbox.open` with a single-argument callback 
+if you are not used to Node-style callbacks. Just use `.orFalse` after the call:
+```javascript
+var box = // ...
+pwbox.open.orFalse(box, password, function (opened) {
+  if (!opened) {
+    // do error handling
+  }
+  // use opened
+});
+```
+
+In this case, the callback will be called with `false` if an error occurs during the call.
 
 ### Options
 
