@@ -10,6 +10,7 @@
   "private": true,
   "scripts": {
     "test": "mocha test/test.all.js",
+    "test-browser": "karma start",
     "lint": "semistandard",
     "browser": "browserify lite.js -t [ babelify --presets [ es2015 ] ] | uglifyjs -o dist/pwbox-lite.min.js"
   },
