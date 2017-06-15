@@ -1,11 +1,11 @@
 'use strict';
 /* eslint-env node, mocha */
 
-const chai = require('chai');
-chai.use(require('./chai-equal-array'));
-chai.use(require('chai-as-promised'));
-chai.use(require('dirty-chai'));
-const expect = chai.expect;
+const expect = require('chai')
+  .use(require('chai-bytes'))
+  .use(require('chai-as-promised'))
+  .use(require('dirty-chai'))
+  .expect;
 const objectAssign = Object.assign || require('object-assign');
 
 const pwbox = require('..');
@@ -17,18 +17,6 @@ const TEST_OPTIONS = {
   opslimit: 1 << 16,
   memlimit: 1 << 20
 };
-
-const Assertion = require('chai').Assertion;
-Assertion.addMethod('arrayEqual', function (expected) {
-  var actual = this._obj;
-  this.assert(
-    expected.length === actual.length &&
-      actual.every((x, i) => (expected[i] === actual[i])),
-    'expected #{this} to equal #{exp}',
-    'exepected #{this} to not equal #{exp}',
-    expected
-  );
-});
 
 // Describes a specific crypto implementation
 function describeImplementation (pwbox, cryptoName) {
@@ -192,7 +180,7 @@ function describeImplementation (pwbox, cryptoName) {
         var promise = pwbox(message, password, TEST_OPTIONS).then(box => {
           return pwbox.open(box, password);
         });
-        expect(promise).to.eventually.equalArray(message);
+        expect(promise).to.eventually.equalBytes(message);
         return promise;
       });
     }
@@ -228,7 +216,7 @@ function describeImplementation (pwbox, cryptoName) {
 
       it('should return result as the first argument in callback', function (done) {
         pwbox.open.orFalse(box, password, function (result) {
-          expect(result).to.be.equalArray(message);
+          expect(result).to.be.equalBytes(message);
           done();
         });
       });
@@ -270,7 +258,7 @@ describe('pwbox compatibility', function () {
     ]).then(results => {
       var tweetBox = results[0];
       var sodiumBox = results[1];
-      expect(tweetBox).to.equalArray(sodiumBox);
+      expect(tweetBox).to.equalBytes(sodiumBox);
     });
   });
 
@@ -299,7 +287,7 @@ describe('pwbox compatibility', function () {
         ]).then(results => {
           var tweetBox = results[0];
           var sodiumBox = results[1];
-          expect(tweetBox).to.equalArray(sodiumBox);
+          expect(tweetBox).to.equalBytes(sodiumBox);
         });
       });
   });

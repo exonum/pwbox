@@ -1,9 +1,9 @@
 'use strict';
 /* eslint-env node, mocha */
 
-const chai = require('chai');
-chai.use(require('./chai-equal-array'));
-const expect = chai.expect;
+const expect = require('chai')
+  .use(require('chai-bytes'))
+  .expect;
 
 const serializer = require('../lib/serializer');
 
@@ -35,7 +35,7 @@ describe('serializer', function () {
 
     it('should serialize algo id with trailing zeros', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(0, 8)).to.equalArray([
+      expect(s.subarray(0, 8)).to.equalBytes([
         115, // s
         99,  // c
         114, // r
@@ -49,40 +49,32 @@ describe('serializer', function () {
 
     it('should serialize opslimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(8, 12)).to.equalArray(new Uint8Array([
-        0, 0, 8, 0
-      ]));
+      expect(s.subarray(8, 12)).to.equalBytes('00000800');
 
       obj.algorithm.opslimit = 129 + (2 << 8) + (255 << 16) + (4 << 24);
       s = serializer.serialize(obj);
-      expect(s.subarray(8, 12)).to.equalArray(new Uint8Array([
-        129, 2, 255, 4
-      ]));
+      expect(s.subarray(8, 12)).to.equalBytes([129, 2, 255, 4]);
       obj.algorithm.opslimit = 524288; // return to old value
     });
 
     it('should serialize memlimit as LE 32-bit value', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(12, 16)).to.equalArray(new Uint8Array([
-        0, 0, 0, 1
-      ]));
+      expect(s.subarray(12, 16)).to.equalBytes([0, 0, 0, 1]);
 
       obj.algorithm.memlimit = 129 + (2 << 8) + (255 << 16) + (4 << 24);
       s = serializer.serialize(obj);
-      expect(s.subarray(12, 16)).to.equalArray(new Uint8Array([
-        129, 2, 255, 4
-      ]));
+      expect(s.subarray(12, 16)).to.equalBytes([129, 2, 255, 4]);
       obj.algorithm.memlimit = 16777216; // return to old value
     });
 
     it('should leave salt intact during serialization', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(16, 48)).to.equalArray(obj.salt);
+      expect(s.subarray(16, 48)).to.equalBytes(obj.salt);
     });
 
     it('should leave ciphertext intact during serialization', function () {
       var s = serializer.serialize(obj);
-      expect(s.subarray(48, 88)).to.equalArray(obj.ciphertext);
+      expect(s.subarray(48, 88)).to.equalBytes(obj.ciphertext);
     });
   });
 
