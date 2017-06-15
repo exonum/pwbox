@@ -13,10 +13,15 @@ const pwbox = require('./lib/pwbox');
  * @api public
  */
 function withCrypto (nacl) {
-  if (nacl === 'libsodium') {
-    nacl = require('./lib/crypto-libsodium');
-  } else if (nacl === 'tweetnacl') {
-    nacl = require('./lib/crypto-tweetnacl');
+  switch (nacl) {
+    case 'libsodium':
+      nacl = require('./lib/crypto-libsodium');
+      break;
+    case 'tweetnacl':
+      nacl = require('./lib/crypto-tweetnacl');
+      break;
+    default:
+      // Do nothing
   }
 
   return pwbox(nacl);
