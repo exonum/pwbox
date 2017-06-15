@@ -6,9 +6,9 @@ on crypto.
 
 ## Table of Contents
 
-  * [Constants](#Constants)
+  * [Constants](#constants)
   * [pwbox](#pwbox)
-  * [pwbox.open](#pwbox.open)
+  * [pwbox.open](#pwboxopen)
 
 ## Constants
 
