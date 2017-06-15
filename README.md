@@ -1,4 +1,15 @@
-# Passphrase-based Encryption for Node and Browsers
+# Password-Based Encryption for Node and Browsers
+
+[![Build status][travis-image]][travis-url]
+[![Code style][code-style-image]][code-style-url]
+[![License][license-image]][license-url]
+
+[travis-image]: https://img.shields.io/travis/exonum/pwbox.svg?style=flat-square
+[travis-url]: https://travis-ci.com/exonum/pwbox
+[code-style-image]: https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square
+[code-style-url]: https://github.com/Flet/semistandard
+[license-image]: https://img.shields.io/github/license/exonum/pwbox.svg?style=flat-square
+[license-url]: https://opensource.org/licenses/Apache-2.0
 
 pwbox is just like NaCl/libsodium's built-in `secretbox`, only it implements
 encryption based on passwords rather on secret keys.
@@ -6,10 +17,10 @@ encryption based on passwords rather on secret keys.
 Behind the scenes, pwbox uses crypto-primitves from NaCl/libsodium:
   * `pwhash_scryptsalsa208sha256` for key derivation
   * `secretbox` routines for key-based symmetric encryption
-  
-**Security Notice.** Use this software at your own risk. You should think twice
+
+**Security Notice.** Use this software at your own risk. You should think carefully
 before using this (or any other) software to ensure browser-based client-side
-security; browser environments are notoriously unsecure.
+security; browser environments are somewhat unsecure.
 
 ## Getting Started
 
@@ -45,7 +56,7 @@ pwbox(message, password, function (err, box) {
 });
 ```
 
-You may also invoke `pwbox` and `pwbox.open` with a single-argument callback 
+You may also invoke `pwbox` and `pwbox.open` with a single-argument callback
 if you are not used to Node-style callbacks. Just use `.orFalse` after the call:
 ```javascript
 var box = // ...
@@ -72,15 +83,15 @@ pwbox(message, password, {
 ```
 
 The default values for `opslimit` and `memlimit` are also taken from libsodium
-(`524288` and `16777216`, respectively). With default parameters, the function completes 
+(`524288` and `16777216`, respectively). With default parameters, the function completes
 with a comfortable 100ms delay in Node, and slightly more in browsers.
 
 ### Backends
 
-pwbox may use one of the following backends:
+pwbox may use one of the following cryptography backends:
   * [libsodium-wrappers-sumo][libsodium]
   * [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
-  
+
 To use a non-default backend, call `pwbox.withCrypto`; it will return the
 object with the same interface as `pwbox` itself.
 
@@ -100,4 +111,4 @@ See documentation for more details.
 
 Copyright (c) 2017, Bitfury Group Limited  
 
-pwbox is licensed under [Apache 2.0 license](LICENSE). 
+pwbox is licensed under [Apache 2.0 license](LICENSE).
