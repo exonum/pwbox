@@ -1,4 +1,4 @@
-# pwbox
+# pwbox API
 
 Password-based encryption routines. See [main readme](../README.md) for a quick
 tutorial and [a separate specification](./cryptography.md) for more details
