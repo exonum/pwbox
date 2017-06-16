@@ -1,11 +1,44 @@
+dist: trusty
+sudo: false
+cache:
+  directories:
+    - node_modules
+branches:
+  only:
+    - master
+    # tags
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 language: node_js
 node_js:
   - "4"
   - "6"
   - "7"
-cache:
-  directories:
-    - node_modules
+env:
+  - TEST_BROWSERS=0
+  - TEST_BROWSERS=1
+matrix:
+  exclude:
+    - node_js: "4"
+      env: TEST_BROWSERS=1
+    - node_js: "7"
+      env: TEST_BROWSERS=1
+
+before_script:
+  - npm install -g mocha-cli
+  # Launch a virtual display imitation for Firefox
+  - |
+    if [[ "$TEST_BROWSERS" == 1 ]]; then \
+      npm install -g karma-cli; \
+      export DISPLAY=:99.0; \
+      sh -e /etc/init.d/xvfb start; \
+      sleep 3; \
+    fi
 script:
   - npm run-script lint
-  - npm test
+  - |
+    if [[ "$TEST_BROWSERS" == 0 ]]; then \
+      npm test; \
+    else \
+      npm run-script test-browser; \
+    fi
