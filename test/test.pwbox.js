@@ -79,11 +79,63 @@ function describeImplementation (pwbox, cryptoName) {
       after = true;
     });
 
-    // TODO test opslimit and memlimit verification
+    [
+      0,
+      16,
+      1024,
+      (1 << 15) - 1 // The minimum allowed value is 1 << 15 (32768)
+    ].forEach(ops => {
+      it('should disallow small opslimit value ' + ops + ' in promise form', function () {
+        expect(pwbox(message, password, { opslimit: ops })).to.eventually.throw(RangeError, /opslimit/i);
+      });
+
+      it('should disallow small opslimit value ' + ops + ' in callback form', function () {
+        expect(() => pwbox(message, password, { opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
+      });
+    });
+
+    [
+      Math.pow(2, 32),
+      Math.pow(2, 52) // close to max safe integer value in JS
+    ].forEach(ops => {
+      it('should disallow large opslimit value ' + ops + ' in promise form', function () {
+        expect(pwbox(message, password, { opslimit: ops })).to.eventually.throw(RangeError, /opslimit/i);
+      });
+
+      it('should disallow large opslimit value ' + ops + ' in callback form', function () {
+        expect(() => pwbox(message, password, { opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
+      });
+    });
+
+    [
+      0,
+      16,
+      1024,
+      (1 << 24) - 1 // The minimum allowed value is 1 << 24 (16M)
+    ].forEach(mem => {
+      it('should disallow small memlimit value ' + mem + ' in promise form', function () {
+        expect(pwbox(message, password, { memlimit: mem })).to.eventually.throw(RangeError, /memlimit/i);
+      });
+
+      it('should disallow small memlimit value ' + mem + ' in callback form', function () {
+        expect(() => pwbox(message, password, { memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
+      });
+    });
+
+    [
+      Math.pow(2, 32),
+      Math.pow(2, 52) // close to max safe integer value in JS
+    ].forEach(mem => {
+      it('should disallow large memlimit value ' + mem + ' in promise form', function () {
+        expect(pwbox(message, password, { memlimit: mem })).to.eventually.throw(RangeError, /memlimit/i);
+      });
+
+      it('should disallow large memlimit value ' + mem + ' in callback form', function () {
+        expect(() => pwbox(message, password, { memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
+      });
+    });
 
     describe('orFalse', function () {
-      // TODO add test when pwbox starts returning errors
-
       it('should return result as the first argument in callback', function (done) {
         pwbox.orFalse(message, password, TEST_OPTIONS, function (result) {
           expect(result).to.be.a('uint8array');
