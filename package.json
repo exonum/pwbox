@@ -17,7 +17,8 @@
     "test": "mocha test/test.all.js",
     "test-browser": "karma start",
     "lint": "semistandard",
-    "browser": "browserify lite.js -t [ babelify --presets [ es2015 ] ] | uglifyjs -o dist/pwbox-lite.min.js"
+    "browser": "mkdirp dist && browserify lite.js -t [ babelify --presets [ es2015 ] ] --standalone pwbox | uglifyjs -o dist/pwbox-lite.min.js",
+    "prepublish": "npm run browser"
   },
   "keywords": [
     "crypto",
@@ -50,9 +51,11 @@
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.3",
     "karma-phantomjs-launcher": "^1.0.4",
+    "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
     "promise": "^7.1.1",
     "semistandard": "^11.0.0",
+    "uglify-js": "^3.0.17",
     "watchify": "^3.9.0"
   }
 }
