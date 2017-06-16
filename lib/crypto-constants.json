@@ -7,6 +7,10 @@
   "scrypt": {
     "saltLength": 32,
     "defaultOpslimit": 524288,
-    "defaultMemlimit": 16777216
+    "defaultMemlimit": 16777216,
+    "minOpslimit": 32768,
+    "minMemlimit": 16777216,
+    "maxOpslimit": 4294967295,
+    "maxMemlimit": 4294967295
   }
 }
