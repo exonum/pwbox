@@ -15,7 +15,7 @@ const cryptoTweetnacl = require('../lib/crypto-tweetnacl');
 // low-effort scrypt settings for testing
 const TEST_OPTIONS = {
   opslimit: 1 << 16,
-  memlimit: 1 << 20
+  memlimit: 1 << 24
 };
 
 // Describes a specific crypto implementation
@@ -86,7 +86,7 @@ function describeImplementation (pwbox, cryptoName) {
       (1 << 15) - 1 // The minimum allowed value is 1 << 15 (32768)
     ].forEach(ops => {
       it('should disallow small opslimit value ' + ops + ' in promise form', function () {
-        expect(pwbox(message, password, { opslimit: ops })).to.eventually.throw(RangeError, /opslimit/i);
+        expect(pwbox(message, password, { opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
       });
 
       it('should disallow small opslimit value ' + ops + ' in callback form', function () {
@@ -99,7 +99,7 @@ function describeImplementation (pwbox, cryptoName) {
       Math.pow(2, 52) // close to max safe integer value in JS
     ].forEach(ops => {
       it('should disallow large opslimit value ' + ops + ' in promise form', function () {
-        expect(pwbox(message, password, { opslimit: ops })).to.eventually.throw(RangeError, /opslimit/i);
+        expect(pwbox(message, password, { opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
       });
 
       it('should disallow large opslimit value ' + ops + ' in callback form', function () {
@@ -114,7 +114,7 @@ function describeImplementation (pwbox, cryptoName) {
       (1 << 24) - 1 // The minimum allowed value is 1 << 24 (16M)
     ].forEach(mem => {
       it('should disallow small memlimit value ' + mem + ' in promise form', function () {
-        expect(pwbox(message, password, { memlimit: mem })).to.eventually.throw(RangeError, /memlimit/i);
+        expect(pwbox(message, password, { memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
       });
 
       it('should disallow small memlimit value ' + mem + ' in callback form', function () {
@@ -127,7 +127,7 @@ function describeImplementation (pwbox, cryptoName) {
       Math.pow(2, 52) // close to max safe integer value in JS
     ].forEach(mem => {
       it('should disallow large memlimit value ' + mem + ' in promise form', function () {
-        expect(pwbox(message, password, { memlimit: mem })).to.eventually.throw(RangeError, /memlimit/i);
+        expect(pwbox(message, password, { memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
       });
 
       it('should disallow large memlimit value ' + mem + ' in callback form', function () {
