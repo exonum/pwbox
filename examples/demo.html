@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<head>
+  <title>pwbox Demo</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <style>
+  body {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+  }
+
+  .msg-text {
+    height: 7.5rem;
+    resize: none;
+  }
+  </style>
+  <script src="../dist/pwbox-lite.min.js"></script>
+</head>
+<body>
+  <h1>pwbox</h1>
+  <p class="lead">pwbox is a library similar to <a href="http://tweetnacl.js.org/">NaCl</a>/<a href="https://download.libsodium.org/doc/">libsodium</a>'s built-in secretbox, only it implements
+  encryption based on passwords rather on secret keys.</p>
+
+  <div class="container">
+    <form>
+      <div class="row form-group">
+        <label for="password">Password</label>
+        <input type="text" id="password" class="form-control" placeholder="Password for encryption/decryption"/>
+        <div class="form-text text-muted small">May be arbitrary, but ASCII chars are preferred because of possible Unicode shenanigans.</div>
+      </div>
+
+      <div class="row form-group">
+        <div class="col-md-6 pl-0">
+          <label for="message">Message</label>
+          <textarea id="message" class="form-control msg-text" placeholder="Message to encrypt"></textarea>
+          <button type="button" id="encrypt" class="btn btn-primary my-3" title="Encrypt message into a box">Encrypt</button>
+        </div>
+        <div class="col-md-6 pr-0">
+          <label for="box">Box</label>
+          <textarea id="box" class="form-control msg-text" placeholder="Encrypted box (hex)"></textarea>
+          <button type="button" id="decrypt" class="btn btn-primary my-3" title="Decrypt encrypted box">Decrypt</button>
+        </div>
+      </div>
+
+      <div class="card card-block row form-group">
+        <h4 class="card-title"><a href="#details" data-toggle="collapse">More options</a></h4>
+        <p>Options with reasonable defaults.</p>
+        <div class="collapse" id="details">
+          <div>
+            <label for="salt">Salt</label>
+            <div class="input-group">
+              <input type="text" id="salt" class="form-control" placeholder="Cryptographic salt"/>
+              <span class="input-group-btn">
+                <button type="button" id="salt-random" class="btn btn-secondary" title="Generate random salt">Random</button>
+              </span>
+            </div>
+            <div class="form-text text-muted small"><span id="salt-length"></span> bytes encoded as hex. Leave empty to use randomly generated salt.</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="opslimit">Opslimit</label>
+              <div class="input-group">
+                <input type="text" id="opslimit" class="form-control" placeholder="Operations limit"/>
+                <span class="input-group-btn">
+                  <button type="button" id="opslimit-reset" class="btn btn-secondary" title="Reset to default">Reset</button>
+                </span>
+              </div>
+              <div class="form-text text-muted small">Operations limit on password hashing. More means more secure, but slower.</div>
+            </div>
+            <div class="col-md-6">
+              <label for="memlimit">Memlimit</label>
+              <div class="input-group">
+                <input type="text" id="memlimit" class="form-control" placeholder="Memory limit"/>
+                <span class="input-group-btn">
+                  <button type="button" id="memlimit-reset" class="btn btn-secondary" title="Reset to default">Reset</button>
+                </span>
+              </div>
+              <div class="form-text text-muted small">Memory limit on password hashing. More means more secure, but slower.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+  <script>
+  /* eslint-env browser,jquery */
+  /* global pwbox */
+  (function () {
+    var encryptBtn = $('#encrypt');
+    var decryptBtn = $('#decrypt');
+
+    var passwordInput = $('#password');
+    var messageInput = $('#message');
+    var boxInput = $('#box');
+    var opslimitInput = $('#opslimit');
+    var memlimitInput = $('#memlimit');
+    var saltInput = $('#salt');
+
+    /**
+     * Convert a string into a UTF-8 encoded byte array.
+     * Sligthly modified version of https://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string
+     */
+    function toUint8Array (str) {
+      str = unescape(encodeURIComponent(str));
+      var buffer = new Uint8Array(str.length);
+      for (var i = 0; i < buffer.length; i++) {
+        buffer[i] = str[i].charCodeAt(0);
+      }
+      return buffer;
+    }
+
+    /**
+     * Decode a string from a UTF-8 encoded byte array.
+     * Sligthly modified version of https://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string
+     */
+    function fromUint8Array (buffer) {
+      var encodedString = String.fromCharCode.apply(null, buffer);
+      var decodedString = decodeURIComponent(escape(encodedString));
+      return decodedString;
+    }
+
+    /**
+     * Converts a byte array into a hex string.
+     */
+    function toHexString (buffer) {
+      var str = '';
+      buffer.forEach(function (b) {
+        var hex = b.toString(16);
+        if (hex.length === 1) hex = '0' + hex;
+        str += hex;
+      });
+      return str;
+    }
+
+    /**
+     * Converts a hex string into a byte array.
+     *
+     * @returns {?Uint8Array}
+     *   decoded array, or `null` if the supplied string is not a valid hex string
+     */
+    function fromHexString (str) {
+      if (str.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(str)) {
+        return null;
+      }
+      var buffer = new Uint8Array(str.length / 2);
+      for (var i = 0; i < buffer.length; i++) {
+        buffer[i] = parseInt(str.substr(2 * i, 2), 16);
+      }
+      return buffer;
+    }
+
+    function showError (e) {
+      // FIXME change to something more presentable
+      console.error(e);
+    }
+
+    // Initialize texts/inputs
+    opslimitInput.val(pwbox.defaultOpslimit);
+    memlimitInput.val(pwbox.defaultMemlimit);
+    $('#salt-length').val(pwbox.saltLength);
+
+    $('#opslimit-reset').click(function () {
+      opslimitInput.val(pwbox.defaultOpslimit);
+    });
+    $('#memlimit-reset').click(function () {
+      memlimitInput.val(pwbox.defaultMemlimit);
+    });
+
+    $('#salt-random').click(function () {
+      var buffer = new Uint8Array(pwbox.saltLength);
+      if (window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(buffer);
+      } else {
+        // XXX: this is insecure, don't use in production!
+        for (var i = 0; i < buffer.length; i++) {
+          buffer[i] = Math.floor(Math.random() * 256);
+        }
+      }
+      saltInput.val(toHexString(buffer));
+    });
+
+    encryptBtn.click(function () {
+      var message = messageInput.val();
+      message = toUint8Array(message);
+      var password = passwordInput.val();
+
+      var options = {
+        memlimit: memlimitInput.val(),
+        opslimit: opslimitInput.val()
+      };
+      var salt = saltInput.val();
+      if (salt.length > 0) {
+        salt = toUint8Array(salt);
+        options.salt = salt;
+      }
+
+      pwbox(message, password, options, function (err, box) {
+        if (err) {
+          showError(err);
+          return;
+        }
+        boxInput.val(toHexString(box));
+      });
+    });
+
+    decryptBtn.click(function () {
+      var box = boxInput.val();
+      var password = passwordInput.val();
+
+      box = fromHexString(box);
+      if (!box) {
+        showError(new TypeError('Invalid hex string for box'));
+        return;
+      }
+      pwbox.open(box, password, function (err, message) {
+        if (err) {
+          showError(err);
+          return;
+        }
+        messageInput.val(fromUint8Array(message));
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
