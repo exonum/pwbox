@@ -26,6 +26,14 @@ function describeImplementation (pwbox, cryptoName) {
     var message = new Uint8Array([ 65, 66, 67 ]);
     var password = 'pleaseletmein';
 
+    // Testing version of `pwbox` with more CPU-friendly options.
+    // Used in places where specific values of `opslimit` and `memlimit`
+    // don't matter.
+    function testBox (options, callback) {
+      options = Object.assign({}, TEST_OPTIONS, options);
+      return pwbox(message, password, options, callback);
+    }
+
     it('should run with promise and no options', function () {
       var promise = pwbox(message, password);
       expect(promise).to.be.instanceof(Promise);
@@ -71,7 +79,7 @@ function describeImplementation (pwbox, cryptoName) {
     // See more about Zalgo here: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
     it('should not release Zalgo', function (done) {
       var after = false;
-      pwbox(message, password, TEST_OPTIONS, function (err, result) {
+      testBox({}, function (err, result) {
         expect(err).to.not.exist();
         expect(after).to.be.true();
         done();
@@ -79,78 +87,82 @@ function describeImplementation (pwbox, cryptoName) {
       after = true;
     });
 
-    [
-      0,
-      16,
-      1024,
-      (1 << 15) - 1 // The minimum allowed value is 1 << 15 (32768)
-    ].forEach(ops => {
-      it('should disallow small opslimit value ' + ops + ' in promise form', function () {
-        expect(pwbox(message, password, { opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
+    describe('options verification', function () {
+      [
+        0,
+        16,
+        1024,
+        (1 << 15) - 1 // The minimum allowed value is 1 << 15 (32768)
+      ].forEach(ops => {
+        it('should disallow small opslimit value ' + ops + ' in promise form', function () {
+          expect(testBox({ opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
+        });
+
+        it('should disallow small opslimit value ' + ops + ' in callback form', function () {
+          expect(() => testBox({ opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
+        });
       });
 
-      it('should disallow small opslimit value ' + ops + ' in callback form', function () {
-        expect(() => pwbox(message, password, { opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
+      [
+        Math.pow(2, 32),
+        Math.pow(2, 52) // close to max safe integer value in JS
+      ].forEach(ops => {
+        it('should disallow large opslimit value ' + ops + ' in promise form', function () {
+          expect(testBox({ opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
+        });
+
+        it('should disallow large opslimit value ' + ops + ' in callback form', function () {
+          expect(() => testBox({ opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
+        });
+      });
+
+      [
+        0,
+        16,
+        1024,
+        (1 << 24) - 1 // The minimum allowed value is 1 << 24 (16M)
+      ].forEach(mem => {
+        it('should disallow small memlimit value ' + mem + ' in promise form', function () {
+          expect(testBox({ memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
+        });
+
+        it('should disallow small memlimit value ' + mem + ' in callback form', function () {
+          expect(() => testBox({ memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
+        });
+      });
+
+      [
+        Math.pow(2, 32),
+        Math.pow(2, 52) // close to max safe integer value in JS
+      ].forEach(mem => {
+        it('should disallow large memlimit value ' + mem + ' in promise form', function () {
+          expect(testBox({ memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
+        });
+
+        it('should disallow large memlimit value ' + mem + ' in callback form', function () {
+          expect(() => testBox({ memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
+        });
       });
     });
 
-    [
-      Math.pow(2, 32),
-      Math.pow(2, 52) // close to max safe integer value in JS
-    ].forEach(ops => {
-      it('should disallow large opslimit value ' + ops + ' in promise form', function () {
-        expect(pwbox(message, password, { opslimit: ops })).to.be.rejectedWith(RangeError, /opslimit/i);
+    describe('object encoding', function () {
+      it('should detect disallowed encoding value in promise form', function () {
+        expect(testBox({ encoding: 'none' })).to.be.rejectedWith(TypeError, /encoding/i);
       });
 
-      it('should disallow large opslimit value ' + ops + ' in callback form', function () {
-        expect(() => pwbox(message, password, { opslimit: ops }, () => {})).to.throw(RangeError, /opslimit/i);
-      });
-    });
-
-    [
-      0,
-      16,
-      1024,
-      (1 << 24) - 1 // The minimum allowed value is 1 << 24 (16M)
-    ].forEach(mem => {
-      it('should disallow small memlimit value ' + mem + ' in promise form', function () {
-        expect(pwbox(message, password, { memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
+      it('should detect disallowed encoding value in callback form', function () {
+        expect(() => testBox({ encoding: 'none' }, () => {})).to.throw(TypeError, /encoding/i);
       });
 
-      it('should disallow small memlimit value ' + mem + ' in callback form', function () {
-        expect(() => pwbox(message, password, { memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
-      });
-    });
-
-    [
-      Math.pow(2, 32),
-      Math.pow(2, 52) // close to max safe integer value in JS
-    ].forEach(mem => {
-      it('should disallow large memlimit value ' + mem + ' in promise form', function () {
-        expect(pwbox(message, password, { memlimit: mem })).to.be.rejectedWith(RangeError, /memlimit/i);
-      });
-
-      it('should disallow large memlimit value ' + mem + ' in callback form', function () {
-        expect(() => pwbox(message, password, { memlimit: mem }, () => {})).to.throw(RangeError, /memlimit/i);
-      });
-    });
-
-    it('should detect disallowed encoding value in promise form', function () {
-      expect(pwbox(message, password, { encoding: 'none' })).to.be.rejectedWith(TypeError, /encoding/i);
-    });
-
-    it('should detect disallowed encoding value in callback form', function () {
-      expect(() => pwbox(message, password, { encoding: 'none' }, () => {})).to.throw(TypeError, /encoding/i);
-    });
-
-    it('should return object when called with object encoding', function () {
-      return pwbox(message, password, { encoding: 'object' }).then(obj => {
-        expect(obj).to.be.an('object');
-        expect(obj.algorithm.id).to.equal('scrypt');
-        expect(obj.algorithm.opslimit).to.equal(pwbox.defaultOpslimit);
-        expect(obj.algorithm.memlimit).to.equal(pwbox.defaultMemlimit);
-        expect(obj.salt).to.be.a('uint8array').with.lengthOf(pwbox.saltLength);
-        expect(obj.ciphertext).to.be.a('uint8array').with.lengthOf(16 + message.length);
+      it('should return object when called with object encoding', function () {
+        return testBox({ encoding: 'object' }).then(obj => {
+          expect(obj).to.be.an('object');
+          expect(obj.algorithm.id).to.equal('scrypt');
+          expect(obj.algorithm.opslimit).to.equal(TEST_OPTIONS.opslimit);
+          expect(obj.algorithm.memlimit).to.equal(TEST_OPTIONS.memlimit);
+          expect(obj.salt).to.be.a('uint8array').with.lengthOf(pwbox.saltLength);
+          expect(obj.ciphertext).to.be.a('uint8array').with.lengthOf(16 + message.length);
+        });
       });
     });
 
