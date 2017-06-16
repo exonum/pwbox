@@ -361,6 +361,7 @@ describe('pwbox compatibility', function () {
 
   var message = new Uint8Array([ 65, 66, 67 ]);
   var password = 'pleaseletmein';
+  var utf8Password = 'пожалуйста пустите!';
 
   it('should calculate N, r, p adequately for tweetnacl', function () {
     var params = cryptoTweetnacl.scrypt.pickParams(pwbox.defaultOpslimit, pwbox.defaultMemlimit);
@@ -395,6 +396,19 @@ describe('pwbox compatibility', function () {
     { opslimit: pwbox.defaultOpslimit * 4, memlimit: pwbox.defaultMemlimit },
     { opslimit: pwbox.defaultOpslimit * 16, memlimit: pwbox.defaultMemlimit }
   ];
+
+  it('should yield same results on both backends with utf-8 password', function () {
+    var opts = { salt: new Uint8Array(pwbox.saltLength) };
+
+    return Promise.all([
+      pwbox(message, utf8Password, opts),
+      sodiumPwbox(message, utf8Password, opts)
+    ]).then(results => {
+      var tweetBox = results[0];
+      var sodiumBox = results[1];
+      expect(tweetBox).to.equalBytes(sodiumBox);
+    });
+  });
 
   testVectors.forEach(vector => {
     var opts = objectAssign({
