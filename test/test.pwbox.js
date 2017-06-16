@@ -297,8 +297,6 @@ describe('pwbox compatibility', function () {
     expect(params.p).to.equal(1);
   });
 
-  // TODO: add test to cover both main branches in pickParams
-
   it('should yield same results on both backends', function () {
     var opts = {
       salt: new Uint8Array(pwbox.saltLength)
@@ -314,13 +312,16 @@ describe('pwbox compatibility', function () {
     });
   });
 
+  // The default memory limit is the minimal one, so there are no tests with lower values
   var testVectors = [
+    { opslimit: pwbox.defaultOpslimit / 8 },
     { opslimit: pwbox.defaultOpslimit / 2 },
     { opslimit: pwbox.defaultOpslimit * 2 },
-    { memlimit: pwbox.defaultMemlimit / 2 },
     { memlimit: pwbox.defaultMemlimit * 2 },
-    { opslimit: pwbox.defaultOpslimit / 2, memlimit: pwbox.defaultMemlimit * 2 },
-    { opslimit: pwbox.defaultOpslimit * 2, memlimit: pwbox.defaultMemlimit / 2 }
+    { opslimit: pwbox.defaultOpslimit / 8, memlimit: pwbox.defaultMemlimit * 4 },
+    { opslimit: pwbox.defaultOpslimit / 2, memlimit: pwbox.defaultMemlimit * 4 },
+    { opslimit: pwbox.defaultOpslimit * 4, memlimit: pwbox.defaultMemlimit },
+    { opslimit: pwbox.defaultOpslimit * 16, memlimit: pwbox.defaultMemlimit }
   ];
 
   testVectors.forEach(vector => {
@@ -333,6 +334,8 @@ describe('pwbox compatibility', function () {
       ', memlimit = ' + opts.memlimit,
 
       function () {
+        this.timeout(10000);
+
         return Promise.all([
           pwbox(message, password, opts),
           sodiumPwbox(message, password, opts)
