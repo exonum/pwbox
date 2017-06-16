@@ -135,6 +135,25 @@ function describeImplementation (pwbox, cryptoName) {
       });
     });
 
+    it('should detect disallowed encoding value in promise form', function () {
+      expect(pwbox(message, password, { encoding: 'none' })).to.be.rejectedWith(TypeError, /encoding/i);
+    });
+
+    it('should detect disallowed encoding value in callback form', function () {
+      expect(() => pwbox(message, password, { encoding: 'none' }, () => {})).to.throw(TypeError, /encoding/i);
+    });
+
+    it('should return object when called with object encoding', function () {
+      return pwbox(message, password, { encoding: 'object' }).then(obj => {
+        expect(obj).to.be.an('object');
+        expect(obj.algorithm.id).to.equal('scrypt');
+        expect(obj.algorithm.opslimit).to.equal(pwbox.defaultOpslimit);
+        expect(obj.algorithm.memlimit).to.equal(pwbox.defaultMemlimit);
+        expect(obj.salt).to.be.a('uint8array').with.lengthOf(pwbox.saltLength);
+        expect(obj.ciphertext).to.be.a('uint8array').with.lengthOf(16 + message.length);
+      });
+    });
+
     describe('orFalse', function () {
       it('should return result as the first argument in callback', function (done) {
         pwbox.orFalse(message, password, TEST_OPTIONS, function (result) {
@@ -184,6 +203,19 @@ function describeImplementation (pwbox, cryptoName) {
       });
     });
 
+    it('should fail on incorrect algo id with object box', function () {
+      var boxObj = {
+        algorithm: {
+          id: 'lol',
+          opslimit: TEST_OPTIONS.opslimit,
+          memlimit: TEST_OPTIONS.memlimit
+        },
+        salt: new Uint8Array(pwbox.saltLength),
+        ciphertext: box.subarray(16 + pwbox.saltLength)
+      };
+      return expect(pwbox.open(boxObj, password)).to.be.rejectedWith(Error, /algorithm/i);
+    });
+
     it('should fail on corrupted input with promise', function () {
       var opened = pwbox.open(corruptedBox, password);
       return expect(opened).to.be.rejectedWith(Error, /corrupted/i);
@@ -195,6 +227,19 @@ function describeImplementation (pwbox, cryptoName) {
         expect(err.message).to.match(/corrupted/i);
         done();
       });
+    });
+
+    it('should fail on corrupted input with object box', function () {
+      var corruptedObj = {
+        algorithm: {
+          id: 'scrypt',
+          opslimit: TEST_OPTIONS.opslimit,
+          memlimit: TEST_OPTIONS.memlimit
+        },
+        salt: new Uint8Array(pwbox.saltLength),
+        ciphertext: corruptedBox.subarray(16 + pwbox.saltLength)
+      };
+      return expect(pwbox.open(corruptedObj, password)).to.be.rejectedWith(Error, /corrupted/i);
     });
 
     it('should not release Zalgo', function (done) {
@@ -225,6 +270,21 @@ function describeImplementation (pwbox, cryptoName) {
         done();
       });
       after = true;
+    });
+
+    it('should work with object box', function () {
+      var boxObj = {
+        algorithm: {
+          id: 'scrypt',
+          opslimit: TEST_OPTIONS.opslimit,
+          memlimit: TEST_OPTIONS.memlimit
+        },
+        salt: new Uint8Array(pwbox.saltLength),
+        ciphertext: box.subarray(16 + pwbox.saltLength)
+      };
+      var promise = pwbox.open(boxObj, password);
+      expect(promise).to.eventually.equalBytes(message);
+      return promise;
     });
 
     function describeTwoWayOp (testName, message, password) {
