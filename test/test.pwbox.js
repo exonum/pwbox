@@ -144,7 +144,7 @@ function describeImplementation (pwbox, cryptoName) {
       });
 
       it('should not accept non-callback interface', function () {
-        expect(() => { pwbox.open.orFalse(message, password); })
+        expect(() => { pwbox.orFalse(message, password); })
           .to.throw(TypeError);
       });
     });
