@@ -30,7 +30,7 @@ function describeImplementation (pwbox, cryptoName) {
     // Used in places where specific values of `opslimit` and `memlimit`
     // don't matter.
     function testBox (options, callback) {
-      options = Object.assign({}, TEST_OPTIONS, options);
+      options = objectAssign({}, TEST_OPTIONS, options);
       return pwbox(message, password, options, callback);
     }
 
@@ -90,7 +90,6 @@ function describeImplementation (pwbox, cryptoName) {
     describe('options verification', function () {
       [
         0,
-        16,
         1024,
         (1 << 15) - 1 // The minimum allowed value is 1 << 15 (32768)
       ].forEach(ops => {
@@ -118,7 +117,6 @@ function describeImplementation (pwbox, cryptoName) {
 
       [
         0,
-        16,
         1024,
         (1 << 24) - 1 // The minimum allowed value is 1 << 24 (16M)
       ].forEach(mem => {
@@ -409,7 +407,7 @@ describe('pwbox compatibility', function () {
     { memlimit: pwbox.defaultMemlimit * 2 },
     { opslimit: pwbox.defaultOpslimit / 8, memlimit: pwbox.defaultMemlimit * 4 },
     { opslimit: pwbox.defaultOpslimit / 2, memlimit: pwbox.defaultMemlimit * 4 },
-    { opslimit: pwbox.defaultOpslimit * 4, memlimit: pwbox.defaultMemlimit },
+    { opslimit: pwbox.defaultOpslimit * 4, memlimit: pwbox.defaultMemlimit * 2 },
     { opslimit: pwbox.defaultOpslimit * 16, memlimit: pwbox.defaultMemlimit }
   ];
 
@@ -436,8 +434,6 @@ describe('pwbox compatibility', function () {
       ', memlimit = ' + opts.memlimit,
 
       function () {
-        this.timeout(10000);
-
         return Promise.all([
           pwbox(message, password, opts),
           sodiumPwbox(message, password, opts)
