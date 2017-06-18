@@ -64,9 +64,31 @@ architectures.
 
 ## Parameter validation
 
-When creating or deserializing a pwbox, parameters are validated as follows:
+When creating or opening a pwbox, parameters are validated as follows:
 
-<!--FIXME write about it when validation is implemented-->
+- If opening a box, algorithm ID should be equal to `'scrypt\0\0'` as described above
+- `opslimit` should be between 65536 (the minimum allowed value as per
+  libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
+- `memlimit` should be between 16777216 (the minimum allowed value as per
+  libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
+
+If these conditions do not hold, the box processing is terminated with an exception.
+
+## Recommended parameter values
+
+Default values for `opslimit` and `memlimit` provide reasonable level of protection.
+For better security, you may use increased values of any or both of these
+parameters. Generally, it is reasonable to set `opslimit` and `memlimit` to
+powers of 2.
+
+One of reasonable strategies may be setting `opslimit` and `memlimit`
+to their default values both multiplied
+by the same power of 2, so that `memlimit = 32 * opslimit` (same as with the defaults).
+With `memlimit = 1 << 30` (1G) and `opslimit = 1 << 25` (32M), this strategy
+yields the *sensitive* set of parameters as defined in libsodium.
+
+> **Warning.** Beware that `memlimit` larger than 64M (`1 << 26`) does not work
+> with the `'libsodium'` backend, so you may try increasing `opslimit` separately.
 
 [rfc8018]: https://tools.ietf.org/html/rfc8018
 [scrypt]: http://www.tarsnap.com/scrypt/scrypt.pdf

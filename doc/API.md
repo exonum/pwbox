@@ -67,6 +67,10 @@ NaCl's secretbox for symmetric encryption.
     a Node standard form `cb(err, box)`, where `err` is a possible execution error,
     and `box` is the encrypted box
 
+> **Tip.** See [the cryptographic spec](cryptography.md#parameter-validation) for
+> restrictions on `opslimit` and `memlimit` parameters and recommendations on
+> their reasonable values.
+
 ### Return value
 
 If `pwbox` is called with a callback, the function returns nothing; it always returns
