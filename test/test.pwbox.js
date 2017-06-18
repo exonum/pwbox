@@ -254,6 +254,22 @@ function describeImplementation (pwbox, cryptoName) {
       return expect(pwbox.open(corruptedObj, password)).to.be.rejectedWith(Error, /corrupted/i);
     });
 
+    it('should fail on input with too small opslimit', function () {
+      var boundsBox = new Uint8Array(box);
+      var opslimitBytes = boundsBox.subarray(8, 12);
+      opslimitBytes.set([ 0, 4, 0, 0 ]); // 1024
+      var opened = pwbox.open(boundsBox, password);
+      return expect(opened).to.be.rejectedWith(RangeError, /opslimit/i);
+    });
+
+    it('should fail on input with too small memlimit', function () {
+      var boundsBox = new Uint8Array(box);
+      var memlimitBytes = boundsBox.subarray(12, 16);
+      memlimitBytes.set([ 0, 0, 128, 0 ]); // 8M
+      var opened = pwbox.open(boundsBox, password);
+      return expect(opened).to.be.rejectedWith(RangeError, /memlimit/i);
+    });
+
     it('should not release Zalgo', function (done) {
       var after = false;
       pwbox.open(box, password, function (err, result) {
