@@ -31,21 +31,35 @@
       </div>
 
       <div class="row form-group">
-        <div class="col-md-6 pl-0">
+        <div class="col-md-6 px-0 pr-md-3" id="encrypt-group">
           <label for="message">Message</label>
           <textarea id="message" class="form-control msg-text" placeholder="Message to encrypt"></textarea>
-          <button type="button" id="encrypt" class="btn btn-primary my-3" title="Encrypt message into a box">Encrypt</button>
+          <div class="row my-3">
+            <div class="col-3">
+              <button type="button" id="encrypt" class="btn btn-primary" title="Encrypt message into a box">Encrypt</button>
+            </div>
+            <div class="col-9">
+              <div class="form-control-feedback" id="encrypt-feedback"></div>
+            </div>
+          </div>
         </div>
-        <div class="col-md-6 pr-0">
+        <div class="col-md-6 px-0 pl-md-3" id="decrypt-group">
           <label for="box">Box</label>
           <textarea id="box" class="form-control msg-text" placeholder="Encrypted box (hex)"></textarea>
-          <button type="button" id="decrypt" class="btn btn-primary my-3" title="Decrypt encrypted box">Decrypt</button>
+          <div class="row my-3">
+            <div class="col-3">
+              <button type="button" id="decrypt" class="btn btn-primary" title="Decrypt encrypted box">Decrypt</button>
+            </div>
+            <div class="col-9">
+              <div class="form-control-feedback" id="decrypt-feedback"></div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="card card-block row form-group">
         <h4 class="card-title"><a href="#details" data-toggle="collapse">More options</a></h4>
-        <p>Options with reasonable defaults.</p>
+        <p>Encryption options with reasonable defaults.</p>
         <div class="collapse" id="details">
           <div>
             <label for="salt">Salt</label>
@@ -62,7 +76,7 @@
             <div class="col-md-6">
               <label for="opslimit">Opslimit</label>
               <div class="input-group">
-                <input type="text" id="opslimit" class="form-control" placeholder="Operations limit"/>
+                <input type="text" inputmode="numeric" id="opslimit" class="form-control" placeholder="Operations limit"/>
                 <span class="input-group-btn">
                   <button type="button" id="opslimit-reset" class="btn btn-secondary" title="Reset to default">Reset</button>
                 </span>
@@ -72,7 +86,7 @@
             <div class="col-md-6">
               <label for="memlimit">Memlimit</label>
               <div class="input-group">
-                <input type="text" id="memlimit" class="form-control" placeholder="Memory limit"/>
+                <input type="text" inputmode="numeric" id="memlimit" class="form-control" placeholder="Memory limit"/>
                 <span class="input-group-btn">
                   <button type="button" id="memlimit-reset" class="btn btn-secondary" title="Reset to default">Reset</button>
                 </span>
