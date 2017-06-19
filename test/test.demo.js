@@ -10,7 +10,6 @@ try {
 
 const path = require('path');
 const expect = require('chai')
-  .use(require('chai-bytes'))
   .use(require('chai-as-promised'))
   .use(require('dirty-chai'))
   .expect;
@@ -26,12 +25,22 @@ describe('pwbox demo page', function () {
   var encryptBtn, decryptBtn, passwordInput, messageInput, boxInput, saltInput,
     opslimitInput, memlimitInput, detailsLink;
 
+  /**
+   * Returns a promise that resolves with the specified delay.
+   *
+   * @param {number} t
+   *  resolution delay
+   * @returns {Promise<undefined>}
+   */
   function wait (t) {
     return new Promise(function (resolve, reject) {
       setTimeout(resolve, t);
     });
   }
 
+  /**
+   * Expands the details section on the demo page.
+   */
   function openDetails () {
     return saltInput.isDisplayed()
       .then(visible => {
@@ -58,7 +67,7 @@ describe('pwbox demo page', function () {
   });
 
   beforeEach(function () {
-    // Reset all controls
+    // Reset main controls
     return Promise.all([
       passwordInput.clear(),
       messageInput.clear(),
@@ -71,13 +80,13 @@ describe('pwbox demo page', function () {
     it('should set correct default opslimit', function () {
       return expect(
         opslimitInput.getAttribute('value')
-      ).to.eventually.equal('524288');
+      ).to.eventually.equal('' + pwbox.defaultOpslimit);
     });
 
     it('should set correct default memlimit', function () {
       return expect(
         memlimitInput.getAttribute('value')
-      ).to.eventually.equal('16777216');
+      ).to.eventually.equal('' + pwbox.defaultMemlimit);
     });
 
     it('should reset opslimit', function () {
@@ -87,7 +96,7 @@ describe('pwbox demo page', function () {
         .then(() => driver.findElement({ id: 'opslimit-reset' }))
         .then(elem => elem.click())
         .then(() => opslimitInput.getAttribute('value'))
-        .then(value => expect(value).to.equal('524288'));
+        .then(value => expect(value).to.equal('' + pwbox.defaultOpslimit));
     });
 
     it('should reset memlimit', function () {
@@ -97,7 +106,7 @@ describe('pwbox demo page', function () {
         .then(() => driver.findElement({ id: 'memlimit-reset' }))
         .then(elem => elem.click())
         .then(() => memlimitInput.getAttribute('value'))
-        .then(value => expect(value).to.equal('16777216'));
+        .then(value => expect(value).to.equal('' + pwbox.defaultMemlimit));
     });
 
     function generateSalt () {
