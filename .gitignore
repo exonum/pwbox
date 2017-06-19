@@ -1,5 +1,15 @@
+# vim files
+*.swp
+
+# macos files
+*.DS_Store
+
+# IDE files
+.idea
+.vscode
+*.iml
+
 node_modules
 npm-debug.log
-
-# Directory with browser version
+coverage
 dist
