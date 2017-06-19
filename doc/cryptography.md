@@ -67,7 +67,7 @@ architectures.
 When creating or opening a pwbox, parameters are validated as follows:
 
 - If opening a box, algorithm ID should be equal to `'scrypt\0\0'` as described above
-- `opslimit` should be between 65536 (the minimum allowed value as per
+- `opslimit` should be between 32768 (the minimum allowed value as per
   libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
 - `memlimit` should be between 16777216 (the minimum allowed value as per
   libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
