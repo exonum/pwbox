@@ -13,32 +13,35 @@ language: node_js
 node_js:
   - "4"
   - "6"
-  - "7"
 env:
-  - TEST_BROWSERS=0
-  - TEST_BROWSERS=1
+  - TEST_SUITE=unittests
+  - TEST_SUITE=browsers
+  - TEST_SUITE=demo
 matrix:
   exclude:
     - node_js: "4"
-      env: TEST_BROWSERS=1
-    - node_js: "7"
-      env: TEST_BROWSERS=1
+      env: TEST_SUITE=browsers
+    - node_js: "4"
+      env: TEST_SUITE=demo
 
 before_script:
   - npm install -g mocha-cli
   # Launch a virtual display imitation for Firefox
   - |
-    if [[ "$TEST_BROWSERS" == 1 ]]; then \
-      npm install -g karma-cli; \
-      export DISPLAY=:99.0; \
-      sh -e /etc/init.d/xvfb start; \
-      sleep 3; \
-    fi
+    case "$TEST_SUITE" in
+      browsers )
+        npm install -g karma-cli
+        export DISPLAY=:99.0
+        sh -e /etc/init.d/xvfb start
+        sleep 3;;
+      demo )
+        npm install selenium-webdriver;;
+    esac
 script:
   - npm run-script lint
   - |
-    if [[ "$TEST_BROWSERS" == 0 ]]; then \
-      npm test; \
-    else \
-      npm run-script test-browser; \
-    fi
+    case "$TEST_SUITE" in
+      unittests ) npm test;;
+      browsers ) npm run test-browser;;
+      demo ) npm run test-demo;;
+    esac
