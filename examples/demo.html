@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+  <meta charset="utf-8">
   <title>pwbox Demo</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   <style>
@@ -130,11 +131,11 @@
      */
     function toHexString (buffer) {
       var str = '';
-      buffer.forEach(function (b) {
-        var hex = b.toString(16);
+      for (var i = 0; i < buffer.length; i++) {
+        var hex = buffer[i].toString(16);
         if (hex.length === 1) hex = '0' + hex;
         str += hex;
-      });
+      }
       return str;
     }
 
@@ -163,7 +164,7 @@
     // Initialize texts/inputs
     opslimitInput.val(pwbox.defaultOpslimit);
     memlimitInput.val(pwbox.defaultMemlimit);
-    $('#salt-length').val(pwbox.saltLength);
+    $('#salt-length').text(pwbox.saltLength);
 
     $('#opslimit-reset').click(function () {
       opslimitInput.val(pwbox.defaultOpslimit);
@@ -174,8 +175,9 @@
 
     $('#salt-random').click(function () {
       var buffer = new Uint8Array(pwbox.saltLength);
-      if (window.crypto.getRandomValues) {
-        window.crypto.getRandomValues(buffer);
+      var crypto = window.crypto || window.msCrypto;
+      if (crypto && crypto.getRandomValues) {
+        crypto.getRandomValues(buffer);
       } else {
         // XXX: this is insecure, don't use in production!
         for (var i = 0; i < buffer.length; i++) {
@@ -196,7 +198,7 @@
       };
       var salt = saltInput.val();
       if (salt.length > 0) {
-        salt = toUint8Array(salt);
+        salt = fromHexString(salt);
         options.salt = salt;
       }
 
