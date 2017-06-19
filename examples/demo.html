@@ -117,6 +117,9 @@
     var memlimitInput = $('#memlimit');
     var saltInput = $('#salt');
 
+    var encryptFeedback = $('#encrypt-feedback');
+    var decryptFeedback = $('#decrypt-feedback');
+
     /**
      * Convert a string into a UTF-8 encoded byte array.
      * Sligthly modified version of https://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string
@@ -170,9 +173,46 @@
       return buffer;
     }
 
-    function showError (e) {
-      // FIXME change to something more presentable
+    function clearStatus () {
+      encryptFeedback.text('');
+      decryptFeedback.text('');
+      $('#encrypt-group,#decrypt-group').toggleClass('has-success has-danger', false);
+    }
+
+    function showSuccess (op) {
+      clearStatus();
+
+      var group;
+      if (op === 'encrypt') {
+        encryptFeedback.text('Successfully encrypted message.');
+        group = $('#encrypt-group');
+      } else {
+        decryptFeedback.text('Successfully decrypted box.');
+        group = $('#decrypt-group');
+      }
+
+      group.toggleClass('has-success', true);
+    }
+
+    function showError (op, e) {
+      clearStatus();
+
+      var group;
+      if (op === 'encrypt') {
+        encryptFeedback.text('Error: ' + e.message);
+        group = $('#encrypt-group');
+      } else {
+        decryptFeedback.text('Error: ' + e.message);
+        group = $('#decrypt-group');
+      }
+
+      group.toggleClass('has-danger', true);
+
       console.error(e);
+    }
+
+    function toggleControls (enable) {
+      $('form button').prop('disabled', !enable);
     }
 
     // Initialize texts/inputs
@@ -202,13 +242,16 @@
     });
 
     encryptBtn.click(function () {
+      clearStatus();
+      toggleControls(false);
+
       var message = messageInput.val();
       message = toUint8Array(message);
       var password = passwordInput.val();
 
       var options = {
-        memlimit: memlimitInput.val(),
-        opslimit: opslimitInput.val()
+        memlimit: parseInt(memlimitInput.val()),
+        opslimit: parseInt(opslimitInput.val())
       };
       var salt = saltInput.val();
       if (salt.length > 0) {
@@ -216,32 +259,56 @@
         options.salt = salt;
       }
 
-      pwbox(message, password, options, function (err, box) {
-        if (err) {
-          showError(err);
-          return;
-        }
-        boxInput.val(toHexString(box));
-      });
+      try {
+        pwbox(message, password, options, function (err, box) {
+          if (err) {
+            showError('encrypt', err);
+            toggleControls(true);
+            return;
+          }
+          boxInput.val(toHexString(box));
+          showSuccess('encrypt');
+          toggleControls(true);
+        });
+      } catch (e) {
+        // Catch synchronous errors, just in case
+        showError('encrypt', e);
+        toggleControls(true);
+      }
     });
 
     decryptBtn.click(function () {
+      clearStatus();
+      toggleControls(false);
+
       var box = boxInput.val();
       var password = passwordInput.val();
 
       box = fromHexString(box);
       if (!box) {
-        showError(new TypeError('Invalid hex string for box'));
+        showError('decrypt', new TypeError('Invalid hex string for box'));
+        toggleControls(true);
         return;
       }
-      pwbox.open(box, password, function (err, message) {
-        if (err) {
-          showError(err);
-          return;
-        }
-        messageInput.val(fromUint8Array(message));
-      });
+
+      try {
+        pwbox.open(box, password, function (err, message) {
+          if (err) {
+            showError('decrypt', err);
+            toggleControls(true);
+            return;
+          }
+          messageInput.val(fromUint8Array(message));
+          showSuccess('decrypt');
+          toggleControls(true);
+        });
+      } catch (e) {
+        showError('decrypt', e);
+        toggleControls(true);
+      }
     });
+
+    $('form input, form textarea').change(clearStatus);
   })();
   </script>
 </body>
