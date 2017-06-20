@@ -34,6 +34,28 @@ pwbox.overheadLength = 64
 ```
 The ovehead length of serialized pwbox compared to the unencrypted message.
 
+## Defined Types
+
+### BoxObject
+
+JS object returned when the `'object'` encoding is specified for [`pwbox`](#pwbox).
+Box objects can also be consumed by [`pwbox.open`](#pwboxopen).
+
+  * **algorithm:** Object  
+    Describes the key derivation algorithm used during box creation.
+    
+    * **algorithm.id:** `'scrypt'`  
+      Algorithm identifier (always `'scrypt'`).
+    * **algorithm.opslimit:** Number  
+      Operations limit used with the key derivation algorithm to create the box.
+    * **algorithm.memlimit:** Number  
+      Memory limit used with the key derivation algorithm to create the box.
+
+  * **salt:** Uint8Array  
+    Cryptographic salt used for key derivation. Salt length is equal to `pwbox.saltLength`.
+  * **ciphertext:** Uint8Array
+    Encrypted message as returned by sodium/NaCl's `secretbox`.
+
 ## pwbox
 
 ```javascript
@@ -61,6 +83,10 @@ NaCl's secretbox for symmetric encryption.
       * **memlimit:** [Number]  
         memlimit for scrypt with the same meaning as in NaCl/libsodium.
         The default value is `pwbox.defaultMemlimit`
+      * **encoding:** [`'object'`|`'binary'`]  
+        Format for the returned box. `'binary'` (default) means that the box
+        is returned as a `Uint8Array`. `'object'` means that the box returned
+        as an [object](#boxobject).
 
   * **callback:** [Function]  
     Function that will be called when encryption is complete. The callback has
@@ -87,7 +113,7 @@ Decrypts a box that was previously encrypted with `pwbox`.
 
 ### Arguments
 
-  * **box:** Uint8Array  
+  * **box:** Uint8Array|BoxObject  
     Encrypted box
   * **password:** Uint8Array|String  
     Password that was used during password encryption  
