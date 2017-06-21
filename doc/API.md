@@ -15,14 +15,37 @@ on crypto.
 ```javascript
 pwbox.defaultOpslimit = 524288
 ```
-The default operations limit for scrypt. The same as the interactive opslimit
-for scrypt in NaCl.
+The default operations limit. The same as the *interactive* opslimit
+for scrypt in libsodium.
 
 ```javascript
 pwbox.defaultMemlimit = 16777216
 ```
-The default memory limit for scrypt. The same as the interactive memlimit
-for scrypt in NaCl.
+The default memory limit. The same as the *interactive* memlimit
+for scrypt in libsodium.
+
+```javascript
+pwbox.minOpslimit = 32768
+```
+The minimum operations limit. The same as in libsodium.
+
+```javascript
+pwbox.minMemlimit = 16777216
+```
+The minimum memory limit. The same as in libsodium.
+
+```javascript
+pwbox.maxOpslimit = 33554432
+```
+The maximum operations limit. The same as the *sensitive* opslimit
+for scrypt in libsodium.
+
+```javascript
+pwbox.maxMemlimit = 1073741824
+```
+The maximum memory limit. The same as the *sensitive* memlimit
+for scrypt in libsodium.
+
 
 ```javascript
 pwbox.saltLength = 32
@@ -78,11 +101,13 @@ NaCl's secretbox for symmetric encryption.
         except for testing purposes. If not specified explicitly, the salt is generated
         randomly
       * **opslimit:** [Number]  
-        opslimit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultOpslimit`
+        Operations limit for scrypt with the same meaning as in NaCl/libsodium.
+        The default value is `pwbox.defaultOpslimit`.
+        Must be in the interval [`pwbox.minOpslimit`, `pwbox.maxOpslimit`].
       * **memlimit:** [Number]  
-        memlimit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultMemlimit`
+        RAM usage limit for scrypt with the same meaning as in NaCl/libsodium.
+        The default value is `pwbox.defaultMemlimit`.
+        Must be in the interval [`pwbox.minMemlimit`, `pwbox.maxMemlimit`].
       * **encoding:** [`'object'`|`'binary'`]  
         Format for the returned box. `'binary'` (default) means that the box
         is returned as a `Uint8Array`. `'object'` means that the box returned
