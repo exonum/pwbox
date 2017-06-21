@@ -1,14 +1,8 @@
 'use strict';
 /* eslint-env node,mocha */
 
-try {
-  var sw = require('selenium-webdriver');
-} catch (err) {
-  console.error('Install `selenium-webdriver` to run tests on demo page');
-  throw err;
-}
-
 const path = require('path');
+const sw = require('selenium-webdriver');
 const expect = require('chai')
   .use(require('chai-as-promised'))
   .use(require('dirty-chai'))
