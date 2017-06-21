@@ -10,7 +10,7 @@
     "defaultMemlimit": 16777216,
     "minOpslimit": 32768,
     "minMemlimit": 16777216,
-    "maxOpslimit": 4294967295,
-    "maxMemlimit": 4294967295
+    "maxOpslimit": 33554432,
+    "maxMemlimit": 1073741824
   }
 }
