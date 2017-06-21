@@ -87,6 +87,23 @@ function describeImplementation (pwbox, cryptoName) {
       after = true;
     });
 
+    describe('constants', function () {
+      [
+        'saltLength',
+        'overheadLength',
+        'defaultOpslimit',
+        'defaultMemlimit',
+        'minOpslimit',
+        'minMemlimit',
+        'maxOpslimit',
+        'maxMemlimit'
+      ].forEach(c => {
+        it('should define constant ' + c, function () {
+          expect(pwbox[c]).to.be.a('number');
+        });
+      });
+    });
+
     describe('options verification', function () {
       [
         0,
