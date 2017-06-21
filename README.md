@@ -109,7 +109,8 @@ function fromUint8Array (buffer) {
 ### Options
 
 pwbox supports tuning the scrypt parameters using `opslimit` and `memlimit` from
-libsodium.
+libsodium. These parameters determine the amount of computations and
+the RAM usage, respectively, for `pwbox` and `pwbox.open`.
 
 ```javascript
 pwbox(message, password, {
@@ -119,8 +120,12 @@ pwbox(message, password, {
 ```
 
 The default values for `opslimit` and `memlimit` are also taken from libsodium
-(`524288` and `16777216`, respectively). With default parameters, the function completes
-with a comfortable 100ms delay in Node, and slightly more in browsers.
+(`524288` and `16777216`, respectively). With the default parameters, `pwbox`
+uses 16 MB of RAM and completes
+with a comfortable 100ms delay in Node, several hundred ms in browsers
+on desktops/laptops, and under a second on smartphones.
+You may use increased parameter values for better security;
+see the [crypto spec](doc/cryptography.md#parameter-validation) for more details.
 
 ### Backends
 

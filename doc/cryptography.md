@@ -95,10 +95,17 @@ provide more than enough protection, and compute in under 10 seconds.
 
 ## Recommended parameter values
 
-Default values for `opslimit` and `memlimit` provide reasonable level of protection.
+Default values for `opslimit` and `memlimit` provide a reasonable level of protection
+in most cases.
+With these values, `pwbox` and `pwbox.open` use approximately 16 MB of RAM
+and finish in 100-200 ms on modern desktops/laptops, and approximately
+in a second on smartphones.
+
 For better security, you may use increased values of any or both of these
 parameters. Generally, it is reasonable to set `opslimit` and `memlimit` to
-powers of 2.
+powers of 2. The value of `memlimit` is approximately equal to the RAM consumption
+of `pwbox` and `pwbox.open` (in bytes). `opslimit` determines the amount of computations;
+the actual latency of `pwbox` and `pwbox.open` heavily depends on the environment.
 
 One of reasonable strategies may be setting `opslimit` and `memlimit`
 to their default values both multiplied
