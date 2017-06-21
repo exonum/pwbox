@@ -68,11 +68,30 @@ When creating or opening a pwbox, parameters are validated as follows:
 
 - If opening a box, algorithm ID should be equal to `'scrypt\0\0'` as described above
 - `opslimit` should be between 32768 (the minimum allowed value as per
-  libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
+  libsodium) and 33554432 (the sensitive setting per libsodium), inclusive
 - `memlimit` should be between 16777216 (the minimum allowed value as per
-  libsodium) and 4294967295 (maximum unsigned 32-bit integer), inclusive
+  libsodium) and 1073741824 (the sensitive setting per libsodium), inclusive
 
 If these conditions do not hold, the box processing is terminated with an exception.
+
+### Why these max limits?
+
+One of use cases for `pwbox` is storing encrypted information on server:
+
+- Encrypt some information on the client side with `pwbox`
+- Send the encrypted box to the server
+- Later, retrieve the box from the server and `pwbox.open` it locally
+
+In this case, the server never touches data in plaintext and thus can limit its
+liabilities. For example, the stored data can be a private key
+used for cryptocurrency management.
+
+Correspondingly, it must be assumed that `pwbox.open` data can come from an untrusted
+source and can be maliciously crafted. If `opslimit` and `memlimit` were not checked,
+it could lead to DoS vulnerabilities, where the box would
+use `0xffffffff` for `opslimit` and `memlimit`. Such a box would take *very*
+long time to open. The chosen maximum values for `opslimit` and `memlimit`
+provide more than enough protection, and compute in under 10 seconds.
 
 ## Recommended parameter values
 
@@ -85,7 +104,7 @@ One of reasonable strategies may be setting `opslimit` and `memlimit`
 to their default values both multiplied
 by the same power of 2, so that `memlimit = 32 * opslimit` (same as with the defaults).
 With `memlimit = 1 << 30` (1G) and `opslimit = 1 << 25` (32M), this strategy
-yields the *sensitive* set of parameters as defined in libsodium.
+yields the maximum values of both parameters.
 
 > **Warning.** Beware that `memlimit` larger than 64M (`1 << 26`) does not work
 > with the `'libsodium'` backend, so you may try increasing `opslimit` separately.
