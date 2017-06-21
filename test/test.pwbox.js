@@ -120,7 +120,7 @@ function describeImplementation (pwbox, cryptoName) {
       });
 
       [
-        Math.pow(2, 32),
+        (1 << 25) + 1, // the maximum allowed value is 1 << 25 (32M)
         Math.pow(2, 52) // close to max safe integer value in JS
       ].forEach(ops => {
         it('should disallow large opslimit value ' + ops + ' in promise form', function () {
@@ -147,7 +147,7 @@ function describeImplementation (pwbox, cryptoName) {
       });
 
       [
-        Math.pow(2, 32),
+        (1 << 30) + 1, // The maximum allowed value is 1 << 30 (1G)
         Math.pow(2, 52) // close to max safe integer value in JS
       ].forEach(mem => {
         it('should disallow large memlimit value ' + mem + ' in promise form', function () {
@@ -277,10 +277,26 @@ function describeImplementation (pwbox, cryptoName) {
       return expect(opened).to.be.rejectedWith(RangeError, /opslimit/i);
     });
 
+    it('should fail on input with too large opslimit', function () {
+      var boundsBox = new Uint8Array(box);
+      var opslimitBytes = boundsBox.subarray(8, 12);
+      opslimitBytes.set([ 0, 0, 0, 4 ]); // 64M, 2x the max limit
+      var opened = pwbox.open(boundsBox, password);
+      return expect(opened).to.be.rejectedWith(RangeError, /opslimit/i);
+    });
+
     it('should fail on input with too small memlimit', function () {
       var boundsBox = new Uint8Array(box);
       var memlimitBytes = boundsBox.subarray(12, 16);
       memlimitBytes.set([ 0, 0, 128, 0 ]); // 8M
+      var opened = pwbox.open(boundsBox, password);
+      return expect(opened).to.be.rejectedWith(RangeError, /memlimit/i);
+    });
+
+    it('should fail on input with too large memlimit', function () {
+      var boundsBox = new Uint8Array(box);
+      var memlimitBytes = boundsBox.subarray(12, 16);
+      memlimitBytes.set([ 1, 0, 0, 64 ]); // max limit + 1
       var opened = pwbox.open(boundsBox, password);
       return expect(opened).to.be.rejectedWith(RangeError, /memlimit/i);
     });
