@@ -10,6 +10,7 @@ const objectAssign = Object.assign || require('object-assign');
 
 const pwbox = require('..');
 const sodiumPwbox = pwbox.withCrypto('libsodium');
+const litePwbox = require('../lite');
 const cryptoTweetnacl = require('../lib/crypto-tweetnacl');
 
 // low-effort scrypt settings for testing
@@ -19,8 +20,8 @@ const TEST_OPTIONS = {
 };
 
 // Describes a specific crypto implementation
-function describeImplementation (pwbox, cryptoName) {
-  describe('pwbox.withCrypto(' + cryptoName + ')', function () {
+function describeImplementation (pwbox, pwboxName) {
+  describe(pwboxName, function () {
     this.timeout(0);
 
     var message = new Uint8Array([ 65, 66, 67 ]);
@@ -196,7 +197,7 @@ function describeImplementation (pwbox, cryptoName) {
     });
   });
 
-  describe('pwbox.withCrypto(' + cryptoName + ').open', function () {
+  describe(pwboxName + '.open', function () {
     this.timeout(0);
 
     var message = new Uint8Array([ 65, 66, 67 ]);
@@ -400,8 +401,9 @@ function describeImplementation (pwbox, cryptoName) {
   });
 }
 
-describeImplementation(pwbox, 'tweetnacl');
-describeImplementation(sodiumPwbox, 'libsodium');
+describeImplementation(pwbox, 'pwbox');
+describeImplementation(sodiumPwbox, 'pwbox.withCrypto(\'libsodium\')');
+describeImplementation(litePwbox, 'pwbox/lite');
 
 describe('pwbox compatibility', function () {
   this.timeout(0);
