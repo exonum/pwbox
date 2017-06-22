@@ -61,6 +61,8 @@
     "promise": "^7.1.1",
     "selenium-webdriver": "^3.4.0",
     "semistandard": "^11.0.0",
+    "sinon": "^2.3.5",
+    "sinon-chai": "^2.11.0",
     "uglify-js": "^3.0.17",
     "watchify": "^3.9.0"
   }

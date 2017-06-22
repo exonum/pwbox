@@ -3,9 +3,11 @@
 
 const expect = require('chai')
   .use(require('chai-bytes'))
+  .use(require('sinon-chai'))
   .use(require('chai-as-promised'))
   .use(require('dirty-chai'))
   .expect;
+const sinon = require('sinon');
 const objectAssign = Object.assign || require('object-assign');
 
 const pwbox = require('..');
@@ -404,6 +406,157 @@ function describeImplementation (pwbox, pwboxName) {
 describeImplementation(pwbox, 'pwbox');
 describeImplementation(sodiumPwbox, 'pwbox.withCrypto(\'libsodium\')');
 describeImplementation(litePwbox, 'pwbox/lite');
+
+describe('withCrypto', function () {
+  // Use a non-trivial derived key to test key/nonce distribution for `secretbox`
+  const DERIVED_KEY = new Uint8Array(56);
+  for (var i = 0; i < DERIVED_KEY.length; i++) {
+    DERIVED_KEY[i] = i;
+  }
+
+  var mockCrypto = {
+    scrypt: function (password, salt, options, callback) {
+      setTimeout(() => {
+        callback(DERIVED_KEY);
+      }, 20);
+    },
+
+    randomBytes: function (len) {
+      return new Uint8Array(len);
+    },
+
+    secretbox: function (message, nonce, key) {
+      return new Uint8Array(16 + message.length);
+    }
+  };
+
+  mockCrypto.secretbox.open = function (box, nonce, key) {
+    return new Uint8Array(box.length - 16);
+  };
+
+  var customPwbox;
+  var message = new Uint8Array([ 65, 66, 67 ]);
+  var password = 'pleaseletmein';
+
+  var box;
+
+  before(function () {
+    // Box needs to look legitimate for it not to trigger error checks
+    return pwbox(message, password, TEST_OPTIONS).then(b => { box = b; });
+  });
+
+  beforeEach(function () {
+    sinon.spy(mockCrypto, 'scrypt');
+    sinon.spy(mockCrypto, 'secretbox');
+    sinon.spy(mockCrypto, 'randomBytes');
+    sinon.spy(mockCrypto.secretbox, 'open');
+
+    customPwbox = pwbox.withCrypto(mockCrypto);
+  });
+
+  afterEach(function () {
+    mockCrypto.scrypt.restore();
+    mockCrypto.secretbox.restore();
+    mockCrypto.randomBytes.restore();
+  });
+
+  it('should call scrypt on pwbox call', function () {
+    return customPwbox(message, password).then(() => {
+      expect(mockCrypto.scrypt).to.have.been.calledOnce()
+        .and.calledWith(password, new Uint8Array(32) /* salt */);
+
+      var call = mockCrypto.scrypt.getCall(0);
+      var options = call.args[2];
+      expect(options.dkLength).to.equal(32 + 24);
+      expect(options.opslimit).to.equal(pwbox.defaultOpslimit);
+      expect(options.memlimit).to.equal(pwbox.defaultMemlimit);
+
+      var cb = call.args[3];
+      expect(cb).to.be.a('function');
+    });
+  });
+
+  it('should call scrypt on pwbox.open call', function () {
+    return customPwbox.open(box, password).then(() => {
+      expect(mockCrypto.scrypt).to.have.been.calledOnce()
+        .and.calledWith(password, box.subarray(16, 48) /* salt */);
+
+      var call = mockCrypto.scrypt.getCall(0);
+      var options = call.args[2];
+      expect(options.dkLength).to.equal(32 + 24);
+      expect(options.opslimit).to.equal(TEST_OPTIONS.opslimit);
+      expect(options.memlimit).to.equal(TEST_OPTIONS.memlimit);
+
+      var cb = call.args[3];
+      expect(cb).to.be.a('function');
+    });
+  });
+
+  it('should call secretbox on pwbox call', function () {
+    var key = DERIVED_KEY.subarray(0, 32);
+    var nonce = DERIVED_KEY.subarray(32);
+
+    return customPwbox(message, password).then(() => {
+      expect(mockCrypto.secretbox).to.have.been.calledOnce()
+        .and.calledWithExactly(message, nonce, key);
+    });
+  });
+
+  it('should call secretbox.open on pwbox.open call', function () {
+    var key = DERIVED_KEY.subarray(0, 32);
+    var nonce = DERIVED_KEY.subarray(32);
+
+    return customPwbox.open(box, password).then(() => {
+      expect(mockCrypto.secretbox.open).to.have.been.calledOnce()
+        .and.calledWithExactly(box.subarray(16 + 32), nonce, key);
+    });
+  });
+
+  it('should call scrypt with custom opslimit and memlimit', function () {
+    return customPwbox(message, password, { opslimit: 1 << 20, memlimit: 1 << 25 }).then(() => {
+      expect(mockCrypto.scrypt).to.have.been.calledOnce();
+
+      var call = mockCrypto.scrypt.getCall(0);
+      var options = call.args[2];
+      expect(options.opslimit).to.equal(1 << 20);
+      expect(options.memlimit).to.equal(1 << 25);
+    });
+  });
+
+  // TODO: verify that nothing is called if options are invalid. Depends on #15
+
+  it('should yield expected result', function () {
+    return customPwbox(message, password).then(box => {
+      expect(box).to.be.a('uint8array').and
+        .have.lengthOf(message.length + pwbox.overheadLength);
+      expect(box.subarray(16)).to.equalBytes(new Uint8Array(box.length - 16));
+    });
+  });
+
+  it('should yield expected result for object encoding', function () {
+    return customPwbox(message, password, { encoding: 'object' }).then(box => {
+      expect(box).to.be.an('object');
+      expect(box.algorithm.id).to.equal('scrypt');
+      expect(box.algorithm.opslimit).to.equal(pwbox.defaultOpslimit);
+      expect(box.algorithm.memlimit).to.equal(pwbox.defaultMemlimit);
+      expect(box.salt).to.equalBytes(new Uint8Array(pwbox.saltLength));
+      expect(box.ciphertext).to.equalBytes(new Uint8Array(16 + message.length));
+    });
+  });
+
+  it('should call randomBytes on pwbox call to generate salt', function () {
+    return customPwbox(message, password).then(() => {
+      expect(mockCrypto.randomBytes).to.have.been.calledOnce()
+        .and.calledWithExactly(pwbox.saltLength);
+    });
+  });
+
+  it('should not call randomBytes on pwbox call if salt is predefined', function () {
+    return customPwbox(message, password, { salt: new Uint8Array(32) }).then(() => {
+      expect(mockCrypto.randomBytes).to.not.have.been.called();
+    });
+  });
+});
 
 describe('pwbox compatibility', function () {
   this.timeout(0);
