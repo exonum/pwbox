@@ -56,13 +56,14 @@ pwbox(message, password, function (err, box) {
 });
 ```
 
-You may also invoke `pwbox` and `pwbox.open` with a single-argument callback
-if you are not used to Node-style callbacks. Just use `.orFalse` after the call:
+You may also invoke `pwbox` and `pwbox.open` with a single-argument callback.
+Just use `.orFalse` after the call:
 ```javascript
 var box = // ...
 pwbox.open.orFalse(box, password, function (opened) {
   if (!opened) {
     // do error handling
+    return;
   }
   // use opened
 });
