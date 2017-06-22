@@ -71,10 +71,47 @@ pwbox.open.orFalse(box, password, function (opened) {
 
 In this case, the callback will be called with `false` if an error occurs during the call.
 
+### Encoding Messages
+
+**pwbox** requires for a message to be a `Uint8Array` instance. This means you can
+encrypt binary data (e.g., private keys) without any conversion. If you want
+to encrypt *string* data, you need to convert it to `Uint8Array`. This can be
+accomplished in several ways.
+
+Node provides [`Buffer.from(str, 'utf8')`][node-bufferfrom] method
+and its older version, [`new Buffer(str, 'utf8')`][node-newbuffer].
+These methods are also available
+via [the `buffer` package][npm-buffer] in browser environments. As `Buffer`s
+inherit from `Uint8Array`, you may freely pass them as messages.
+
+Browsers [can also use][so-str-to-buffer]
+built-in `enodeURIComponent` and `decodeURIComponent` methods for the conversion:
+
+```javascript
+function toUint8Array (str) {
+  str = unescape(encodeURIComponent(str));
+  var buffer = new Uint8Array(str.length);
+  for (var i = 0; i < buffer.length; i++) {
+    buffer[i] = str[i].charCodeAt(0);
+  }
+  return buffer;
+}
+
+function fromUint8Array (buffer) {
+  var encodedString = String.fromCharCode.apply(null, buffer);
+  var decodedString = decodeURIComponent(escape(encodedString));
+  return decodedString;
+}
+```
+
+> **Tip.** Although it's not strictly necessary, you may convert the password
+> into a `Uint8Array` in the same way as the message.
+
 ### Options
 
 pwbox supports tuning the scrypt parameters using `opslimit` and `memlimit` from
-libsodium.
+libsodium. These parameters determine the amount of computations and
+the RAM usage, respectively, for `pwbox` and `pwbox.open`.
 
 ```javascript
 pwbox(message, password, {
@@ -84,8 +121,12 @@ pwbox(message, password, {
 ```
 
 The default values for `opslimit` and `memlimit` are also taken from libsodium
-(`524288` and `16777216`, respectively). With default parameters, the function completes
-with a comfortable 100ms delay in Node, and slightly more in browsers.
+(`524288` and `16777216`, respectively). With the default parameters, `pwbox`
+uses 16 MB of RAM and completes
+with a comfortable 100ms delay in Node, several hundred ms in browsers
+on desktops/laptops, and under a second on smartphones.
+You may use increased parameter values for better security;
+see the [crypto spec](doc/cryptography.md#parameter-validation) for more details.
 
 ### Backends
 
@@ -110,6 +151,11 @@ See documentation for more details.
 
 ## License
 
-Copyright (c) 2017, Bitfury Group Limited  
+Copyright (c) 2017, Bitfury Group Limited
 
 pwbox is licensed under [Apache 2.0 license](LICENSE).
+
+[node-bufferfrom]: https://nodejs.org/dist/latest-v6.x/docs/api/buffer.html#buffer_class_method_buffer_from_string_encoding
+[node-newbuffer]: https://nodejs.org/dist/latest-v6.x/docs/api/buffer.html#buffer_new_buffer_string_encoding
+[npm-buffer]: https://www.npmjs.com/package/buffer
+[so-str-to-buffer]: https://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string

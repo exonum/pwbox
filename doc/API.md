@@ -16,14 +16,36 @@ on crypto.
 ```none
 pwbox.defaultOpslimit = 524288
 ```
-The default operations limit for scrypt. The same as the interactive opslimit
-for scrypt in NaCl.
+The default operations limit. The same as the *interactive* opslimit
+for scrypt in libsodium.
 
 ```none
 pwbox.defaultMemlimit = 16777216
 ```
-The default memory limit for scrypt. The same as the interactive memlimit
-for scrypt in NaCl.
+The default memory limit. The same as the *interactive* memlimit
+for scrypt in libsodium.
+
+```none
+pwbox.minOpslimit = 32768
+```
+The minimum operations limit. The same as in libsodium.
+
+```none
+pwbox.minMemlimit = 16777216
+```
+The minimum memory limit. The same as in libsodium.
+
+```none
+pwbox.maxOpslimit = 33554432
+```
+The maximum operations limit. The same as the *sensitive* opslimit
+for scrypt in libsodium.
+
+```none
+pwbox.maxMemlimit = 1073741824
+```
+The maximum memory limit. The same as the *sensitive* memlimit
+for scrypt in libsodium.
 
 ```none
 pwbox.saltLength = 32
@@ -34,6 +56,28 @@ Length of salt used in pwbox. The same as that for scrypt.
 pwbox.overheadLength = 64
 ```
 The ovehead length of serialized pwbox compared to the unencrypted message.
+
+## Defined Types
+
+### BoxObject
+
+JS object returned when the `'object'` encoding is specified for [`pwbox`](#pwbox).
+Box objects can also be consumed by [`pwbox.open`](#pwboxopen).
+
+  * **algorithm:** Object  
+    Describes the key derivation algorithm used during box creation.
+    
+    * **algorithm.id:** `'scrypt'`  
+      Algorithm identifier (always `'scrypt'`).
+    * **algorithm.opslimit:** Number  
+      Operations limit used with the key derivation algorithm to create the box.
+    * **algorithm.memlimit:** Number  
+      Memory limit used with the key derivation algorithm to create the box.
+
+  * **salt:** Uint8Array  
+    Cryptographic salt used for key derivation. Salt length is equal to `pwbox.saltLength`.
+  * **ciphertext:** Uint8Array
+    Encrypted message as returned by sodium/NaCl's `secretbox`.
 
 ## pwbox
 
@@ -57,16 +101,26 @@ NaCl's secretbox for symmetric encryption.
         except for testing purposes. If not specified explicitly, the salt is generated
         randomly
       * **opslimit:** [Number]  
-        opslimit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultOpslimit`
+        Operations limit for scrypt with the same meaning as in NaCl/libsodium.
+        The default value is `pwbox.defaultOpslimit`.
+        Must be in the interval [`pwbox.minOpslimit`, `pwbox.maxOpslimit`].
       * **memlimit:** [Number]  
-        memlimit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultMemlimit`
+        RAM usage limit for scrypt with the same meaning as in NaCl/libsodium.
+        The default value is `pwbox.defaultMemlimit`.
+        Must be in the interval [`pwbox.minMemlimit`, `pwbox.maxMemlimit`].
+      * **encoding:** [`'object'`|`'binary'`]  
+        Format for the returned box. `'binary'` (default) means that the box
+        is returned as a `Uint8Array`. `'object'` means that the box returned
+        as an [object](#boxobject).
 
   * **callback:** [Function]  
     Function that will be called when encryption is complete. The callback has
     a Node standard form `cb(err, box)`, where `err` is a possible execution error,
     and `box` is the encrypted box
+
+> **Tip.** See [the cryptographic spec](cryptography.md#parameter-validation) for
+> restrictions on `opslimit` and `memlimit` parameters and recommendations on
+> their reasonable values.
 
 ### Return value
 
@@ -84,7 +138,7 @@ Decrypts a box that was previously encrypted with `pwbox`.
 
 ### Arguments
 
-  * **box:** Uint8Array  
+  * **box:** Uint8Array|BoxObject  
     Encrypted box
   * **password:** Uint8Array|String  
     Password that was used during password encryption  

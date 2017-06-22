@@ -29,4 +29,20 @@ describe('crypto-constants', function () {
   it('should have reasonable default memlimit', function () {
     expect(constants.scrypt.defaultMemlimit).to.equal(sodium.crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE);
   });
+
+  it('should have correct minimum opslimit', function () {
+    expect(constants.scrypt.minOpslimit).to.equal(sodium.crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_MIN);
+  });
+
+  it('should have correct minimum memlimit', function () {
+    expect(constants.scrypt.minMemlimit).to.equal(sodium.crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_MIN);
+  });
+
+  it('should have reasonable maximum opslimit', function () {
+    expect(constants.scrypt.maxOpslimit).to.equal(sodium.crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_SENSITIVE);
+  });
+
+  it('should have reasonable maximum memlimit', function () {
+    expect(constants.scrypt.maxMemlimit).to.equal(sodium.crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_SENSITIVE);
+  });
 });
