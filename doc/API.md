@@ -13,32 +13,32 @@ on crypto.
 
 ## Constants
 
-```javascript
+```none
 pwbox.defaultOpslimit = 524288
 ```
 The default operations limit for scrypt. The same as the interactive opslimit
 for scrypt in NaCl.
 
-```javascript
+```none
 pwbox.defaultMemlimit = 16777216
 ```
 The default memory limit for scrypt. The same as the interactive memlimit
 for scrypt in NaCl.
 
-```javascript
+```none
 pwbox.saltLength = 32
 ```
 Length of salt used in pwbox. The same as that for scrypt.
 
-```javascript
+```none
 pwbox.overheadLength = 64
 ```
 The ovehead length of serialized pwbox compared to the unencrypted message.
 
 ## pwbox
 
-```javascript
-function pwbox (message, password, [options={}], [callback])
+```none
+function pwbox(message, password, [options={}], [callback])
 ```
 
 Performs password-based encryption using scrypt for key derivation and
@@ -76,8 +76,8 @@ it returns a `Promise` with the encrypted box.
 
 ## pwbox.open
 
-```javascript
-function pwbox.open (box, password, [callback])
+```none
+function pwbox.open(box, password, [callback])
 ```
 
 Decrypts a box that was previously encrypted with `pwbox`.
@@ -101,9 +101,9 @@ it returns a `Promise` with the decrypted message.
 
 ## `orFalse` variants
 
-```javascript
-function pwbox.orFalse (message, password, [options], callback)
-function pwbox.open.orFalse (box, password, callback)
+```none
+function pwbox.orFalse(message, password, [options], callback)
+function pwbox.open.orFalse(box, password, callback)
 ```
 
 Variants of [`pwbox`](#pwbox) and [`pwbox.open`](#pwboxopen), respectively,
