@@ -25,28 +25,27 @@ pwbox.defaultMemlimit = 16777216
 The default memory limit. The same as the *interactive* memlimit
 for scrypt in libsodium.
 
-```javascript
+```none
 pwbox.minOpslimit = 32768
 ```
 The minimum operations limit. The same as in libsodium.
 
-```javascript
+```none
 pwbox.minMemlimit = 16777216
 ```
 The minimum memory limit. The same as in libsodium.
 
-```javascript
+```none
 pwbox.maxOpslimit = 33554432
 ```
 The maximum operations limit. The same as the *sensitive* opslimit
 for scrypt in libsodium.
 
-```javascript
+```none
 pwbox.maxMemlimit = 1073741824
 ```
 The maximum memory limit. The same as the *sensitive* memlimit
 for scrypt in libsodium.
-
 
 ```none
 pwbox.saltLength = 32
