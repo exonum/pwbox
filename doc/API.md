@@ -10,6 +10,7 @@ on crypto.
   * [`pwbox`](#pwbox)
   * [`pwbox.open`](#pwboxopen)
   * [`pwbox.orFalse` and `pwbox.open.orFalse`](#orfalse-variants)
+  * [withCrypto](#withCrypto)
 
 ## Constants
 
@@ -173,3 +174,59 @@ functions, `orFalse` variants differ in the following ways:
   as a failure marker does not create ambiguities.
 
 In all other ways, `orFalse` variants behave exactly as their base counterparts.
+
+## `withCrypto`
+
+```none
+function pwbox.withCrypto(crypto)
+```
+
+Creates a new `pwbox` suite with the specific cryptographic backend.
+
+### Arguments
+
+  * **crypto:** `'tweetnacl'`|`'libsodium'`|Object  
+    Cryptographic module to use. Allowed string values are:
+    
+      * `'tweetnacl'` (uses [the eponymous lib][tweetnacl] +
+        [`scrypt-async`][scrypt-async] for
+        the `scrypt` function)
+      * `'libsodium'` (uses [`libsodium-wrappers-sumo`][libsodium]).
+
+    Alternatively, you may pass a cryptographic module with
+    [the predefined interface](#crypto-interface).
+
+### Crypto interface
+
+If `crypto` is an object, it needs to have the following interface compatible with
+TweetNaCl.js:
+
+```none
+function crypto.randomBytes(length)
+function crypto.scrypt(password, salt, options, callback)
+function crypto.secretbox(message, nonce, key)
+function crypto.secretbox.open(box, nonce, key)
+```
+
+where:
+  * **randomBytes** generates cryptographically secure random bytes in the form
+    of a `Uint8Aray` of a specified length
+  * **scrypt** implements the password-based derivation function and calls
+    a callback on completion. `opslimit` and `memlimit` options from `pwbox`
+    are passed to the `options` unchanged. `options` also contains `dkLength`,
+    the required length of a derived key in bytes
+  * **secretbox** and **secretbox.open** implement symmetric encryption/decryption
+    respectively. All their arguments are `Uint8Array`s. `key` and `nonce`
+    have length 32 and 24 bytes, respectively, while `message`/`box` may have
+    variable length
+
+### Return value
+
+`pwbox.withCrypto` returns the `pwbox` function with the interface described above.
+The returned function supports callbacks and promises, has `pwbox.open`,
+`pwbox.orFalse` and `pwbox.open.orFalse`, etc.
+The only thing that the returned function *does not* have is `withCrypto` itself.
+
+[libsodium]: https://www.npmjs.com/package/libsodium-wrappers-sumo
+[tweetnacl]: https://www.npmjs.com/package/tweetnacl
+[scrypt-async]: https://www.npmjs.com/package/scrypt-async
