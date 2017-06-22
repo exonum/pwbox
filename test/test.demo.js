@@ -19,6 +19,8 @@ describe('pwbox demo page', function () {
   var encryptBtn, decryptBtn, passwordInput, messageInput, boxInput, saltInput,
     opslimitInput, memlimitInput, detailsLink;
 
+  this.slow(500);
+
   /**
    * Returns a promise that resolves with the specified delay.
    *
@@ -40,6 +42,22 @@ describe('pwbox demo page', function () {
       .then(visible => {
         if (!visible) return detailsLink.click().then(() => wait(500));
       });
+  }
+
+  /**
+   * Pushes the "Encrypt" button and waits until the encryption is completed.
+   */
+  function encrypt () {
+    return encryptBtn.click()
+      .then(() => driver.wait(sw.until.elementIsEnabled(encryptBtn)));
+  }
+
+  /**
+   * Pushes the "Decrypt" button and waits until the decryption is completed.
+   */
+  function decrypt () {
+    return decryptBtn.click()
+      .then(() => driver.wait(sw.until.elementIsEnabled(encryptBtn)));
   }
 
   before(function () {
@@ -140,7 +158,7 @@ describe('pwbox demo page', function () {
     it('should refuse to encrypt message with small opslimit', function () {
       return expect(opslimitInput.clear()
         .then(() => opslimitInput.sendKeys('32767'))
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => driver.findElement({ id: 'encrypt-feedback' }))
         .then(elem => elem.getText())
       ).to.eventually.match(/Error:.*opslimit.*small/i);
@@ -149,7 +167,7 @@ describe('pwbox demo page', function () {
     it('should refuse to encrypt message with large opslimit', function () {
       return expect(opslimitInput.clear()
         .then(() => opslimitInput.sendKeys('34000000'))
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => driver.findElement({ id: 'encrypt-feedback' }))
         .then(elem => elem.getText())
       ).to.eventually.match(/Error:.*opslimit.*large/i);
@@ -158,7 +176,7 @@ describe('pwbox demo page', function () {
     it('should refuse to encrypt message with small memlimit', function () {
       return expect(memlimitInput.clear()
         .then(() => memlimitInput.sendKeys('16500000'))
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => driver.findElement({ id: 'encrypt-feedback' }))
         .then(elem => elem.getText())
       ).to.eventually.match(/Error:.*memlimit.*small/i);
@@ -167,7 +185,7 @@ describe('pwbox demo page', function () {
     it('should refuse to encrypt message with large memlimit', function () {
       return expect(memlimitInput.clear()
         .then(() => memlimitInput.sendKeys('1100000000'))
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => driver.findElement({ id: 'encrypt-feedback' }))
         .then(elem => elem.getText())
       ).to.eventually.match(/Error:.*memlimit.*large/i);
@@ -179,11 +197,9 @@ describe('pwbox demo page', function () {
       return expect(Promise.all([
         passwordInput.sendKeys('pleaseletmein'),
         messageInput.sendKeys(msg)
-      ]).then(() => {
-        return encryptBtn.click();
-      }).then(() => {
-        return boxInput.getAttribute('value');
-      })).to.eventually.have.lengthOf(2 * (msg.length + pwbox.overheadLength))
+      ]).then(encrypt)
+        .then(() => boxInput.getAttribute('value'))
+      ).to.eventually.have.lengthOf(2 * (msg.length + pwbox.overheadLength))
         .and.satisfy(box => box.substring(0, 16) === '7363727970740000', 'unexpected algorithm ID')
         .and.satisfy(box => box.substring(16, 24) === '00000800', 'unexpected opslimit')
         .and.satisfy(box => box.substring(24, 32) === '00000001', 'unexpected memlimit');
@@ -195,10 +211,10 @@ describe('pwbox demo page', function () {
       return Promise.all([
         passwordInput.sendKeys('pleaseletmein'),
         messageInput.sendKeys('message')
-      ]).then(() => encryptBtn.click())
+      ]).then(encrypt)
         .then(() => boxInput.getAttribute('value'))
         .then(box => { box1 = box; })
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => boxInput.getAttribute('value'))
         .then(box => { box2 = box; })
         .then(() => expect(box2).to.not.equal(box1));
@@ -214,10 +230,10 @@ describe('pwbox demo page', function () {
         passwordInput.sendKeys('pleaseletmein'),
         messageInput.sendKeys('message'),
         saltInput.sendKeys(zeroSalt)
-      ]).then(() => encryptBtn.click())
+      ]).then(encrypt)
         .then(() => boxInput.getAttribute('value'))
         .then(box => { box1 = box; })
-        .then(() => encryptBtn.click())
+        .then(encrypt)
         .then(() => boxInput.getAttribute('value'))
         .then(box => { box2 = box; })
         .then(() => expect(box2).to.equal(box1));
@@ -239,11 +255,11 @@ describe('pwbox demo page', function () {
       return Promise.all([
         passwordInput.sendKeys('pleaseletmein'),
         messageInput.sendKeys(msg)
-      ]).then(() => encryptBtn.click())
+      ]).then(encrypt)
         .then(() => messageInput.clear())
         .then(() => messageInput.getAttribute('value'))
         .then(value => expect(value).to.equal('')) // check that the message has been erased
-        .then(() => decryptBtn.click())
+        .then(decrypt)
         .then(() => messageInput.getAttribute('value'))
         .then(value => expect(value).to.equal(msg));
     });
@@ -254,11 +270,11 @@ describe('pwbox demo page', function () {
       return Promise.all([
         passwordInput.sendKeys('pleaseletmein'),
         messageInput.sendKeys(msg)
-      ]).then(() => encryptBtn.click())
+      ]).then(encrypt)
         .then(() => messageInput.clear())
         .then(() => messageInput.getAttribute('value'))
         .then(value => expect(value).to.equal('')) // check that the message has been erased
-        .then(() => decryptBtn.click())
+        .then(decrypt)
         .then(() => messageInput.getAttribute('value'))
         .then(value => expect(value).to.equal(msg));
     });
@@ -270,14 +286,14 @@ describe('pwbox demo page', function () {
       return pwbox(Buffer.from(msg, 'utf8'), password)
         .then(box => boxInput.sendKeys(Buffer.from(box).toString('hex')))
         .then(() => passwordInput.sendKeys(password))
-        .then(() => decryptBtn.click())
+        .then(decrypt)
         .then(() => messageInput.getAttribute('value'))
         .then(value => expect(value).to.equal(msg));
     });
 
     it('should fail on incorrect hex box', function () {
       return expect(boxInput.sendKeys('not a hex string')
-        .then(() => decryptBtn.click())
+        .then(decrypt)
         .then(() => driver.findElement({ id: 'decrypt-feedback' }))
         .then(elem => elem.getText())
       ).to.eventually.match(/^Error.*hex/i);
@@ -365,7 +381,7 @@ describe('pwbox demo page', function () {
           })
           .then(box => boxInput.sendKeys(box))
           .then(() => passwordInput.sendKeys(password))
-          .then(() => decryptBtn.click())
+          .then(decrypt)
           .then(() => driver.findElement({ id: 'decrypt-feedback' }))
           .then(elem => elem.getText())
         ).to.eventually.match(error);
