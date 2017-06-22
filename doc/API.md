@@ -7,37 +7,38 @@ on crypto.
 ## Table of Contents
 
   * [Constants](#constants)
-  * [pwbox](#pwbox)
-  * [pwbox.open](#pwboxopen)
+  * [`pwbox`](#pwbox)
+  * [`pwbox.open`](#pwboxopen)
+  * [`pwbox.orFalse` and `pwbox.open.orFalse`](#orfalse-variants)
 
 ## Constants
 
-```javascript
+```none
 pwbox.defaultOpslimit = 524288
 ```
 The default operations limit for scrypt. The same as the interactive opslimit
 for scrypt in NaCl.
 
-```javascript
+```none
 pwbox.defaultMemlimit = 16777216
 ```
 The default memory limit for scrypt. The same as the interactive memlimit
 for scrypt in NaCl.
 
-```javascript
+```none
 pwbox.saltLength = 32
 ```
 Length of salt used in pwbox. The same as that for scrypt.
 
-```javascript
+```none
 pwbox.overheadLength = 64
 ```
 The ovehead length of serialized pwbox compared to the unencrypted message.
 
 ## pwbox
 
-```javascript
-function pwbox (message, password, [options={}], [callback])
+```none
+function pwbox(message, password, [options={}], [callback])
 ```
 
 Performs password-based encryption using scrypt for key derivation and
@@ -75,8 +76,8 @@ it returns a `Promise` with the encrypted box.
 
 ## pwbox.open
 
-```javascript
-function pwbox.open (box, password, [callback])
+```none
+function pwbox.open(box, password, [callback])
 ```
 
 Decrypts a box that was previously encrypted with `pwbox`.
@@ -97,3 +98,24 @@ Decrypts a box that was previously encrypted with `pwbox`.
 If `pwbox.open` is called with a callback, the function returns nothing; it always returns
 before the callback is called. If `pwbox.open` is called without a callback,
 it returns a `Promise` with the decrypted message.
+
+## `orFalse` variants
+
+```none
+function pwbox.orFalse(message, password, [options], callback)
+function pwbox.open.orFalse(box, password, callback)
+```
+
+Variants of [`pwbox`](#pwbox) and [`pwbox.open`](#pwboxopen), respectively,
+that have a single-argument callback. Compared to the base versions of corresponding
+functions, `orFalse` variants differ in the following ways:
+
+- The callback is a mandatory argument of the function, rather than an optional
+  one. The function will throw a `TypeError` if a callback is not supplied.
+- A callback is called with a single argument, corresponding to the result of
+  computations. If the original version of the function fails with an async error,
+  the `orFalse` variant calls the callback with `false`. Note that `false` is
+  not a valid result in either `pwbox` or `pwbox.open`, so using `false`
+  as a failure marker does not create ambiguities.
+
+In all other ways, `orFalse` variants behave exactly as their base counterparts.
