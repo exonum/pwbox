@@ -107,7 +107,7 @@ function fromUint8Array (buffer) {
 > **Tip.** Although it's not strictly necessary, you may convert the password
 > into a `Uint8Array` in the same way as the message.
 
-### Options
+## Options
 
 pwbox supports tuning the scrypt parameters using `opslimit` and `memlimit` from
 libsodium. These parameters determine the amount of computations and
@@ -134,7 +134,8 @@ pwbox may use one of the following cryptography backends:
   * [libsodium-wrappers-sumo][libsodium]
   * [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
 
-To use a non-default backend, call `pwbox.withCrypto`; it will return the
+To use a non-default backend, call `pwbox.withCrypto` with `'tweetnacl'`
+or `'libsodium'`; it will return the
 object with the same interface as `pwbox` itself.
 
 ```javascript
@@ -143,7 +144,17 @@ sodiumPwbox(message, password).then(/* ... */);
 ```
 
 You may even supply your own backend by passing an object to `withCrypto`!
-See documentation for more details.
+[See documentation](doc/API.md#withcrypto) for more details.
+
+## Lite Version and Use in Browsers
+
+`require('pwbox/lite')` loads a simplified version of **pwbox**, which
+uses a fixed backend (tweetnacl + scrypt-async) and has no `withCrypto` function.
+This is the preferred way to use **pwbox** in browsers, as the full version
+of the librabry is quite bulky. You may use `'pwbox/lite'` together with
+your favorite browserifier (say, `browserify` or `webpack`), or
+import a readymade browserified and minified lite package directly
+from the **dist** directory of the package.
 
 [libsodium]: https://www.npmjs.com/package/libsodium-wrappers-sumo
 [tweetnacl]: https://www.npmjs.com/package/tweetnacl
