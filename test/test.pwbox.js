@@ -523,7 +523,46 @@ describe('withCrypto', function () {
     });
   });
 
-  // TODO: verify that nothing is called if options are invalid. Depends on #15
+  [
+    [ { opslimit: (1 << 15) - 1 }, 'small opslimit' ],
+    [ { opslimit: (1 << 25) + 1 }, 'large opslimit' ],
+    [ { memlimit: (1 << 24) - 1 }, 'small memlimit' ],
+    [ { memlimit: (1 << 30) + 1 }, 'large memlimit' ],
+    [ { encoding: 'none' }, 'invalid encoding' ]
+  ].forEach(vector => {
+    var options = vector[0];
+    var name = vector[1];
+
+    it('should not call scrypt or secretbox on calling pwbox with ' + name, function () {
+      return expect(customPwbox(message, password, options)).to.have.been.rejected()
+        .then(() => {
+          expect(mockCrypto.scrypt).to.not.have.been.called();
+          expect(mockCrypto.secretbox).to.not.have.been.called();
+        });
+    });
+  });
+
+  [
+    [ box => box.subarray(8, 12).set([0xff, 0x7f, 0, 0]), 'small opslimit' ],
+    [ box => box.subarray(8, 12).set([1, 0, 0, 2]), 'large opslimit' ],
+    [ box => box.subarray(12, 16).set([0xff, 0xff, 0xff, 0]), 'small memlimit' ],
+    [ box => box.subarray(12, 16).set([1, 0, 0, 0x40]), 'large memlimit' ],
+    [ box => { box[0] = 32; }, 'invalid algo id' ]
+  ].forEach(vector => {
+    let mutation = vector[0];
+    var name = vector[1];
+
+    it('should not call scrypt or secretbox on calling pwbox.open with ' + name, function () {
+      var corruptedBox = new Uint8Array(box);
+      mutation(corruptedBox);
+
+      return expect(customPwbox.open(corruptedBox, password)).to.have.been.rejected()
+        .then(() => {
+          expect(mockCrypto.scrypt).to.not.have.been.called();
+          expect(mockCrypto.secretbox).to.not.have.been.called();
+        });
+    });
+  });
 
   it('should yield expected result', function () {
     return customPwbox(message, password).then(box => {
