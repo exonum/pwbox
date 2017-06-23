@@ -14,11 +14,11 @@ module.exports = function (config) {
     browserify: {
       debug: true,
       transform: [
-        [ 'babelify', { presets: [ 'es2015' ] } ]
+        [ 'babelify', { presets: [ 'es2015' ], plugins: [ 'istanbul' ] } ]
       ]
     },
 
-    reporters: ['mocha'],
+    reporters: ['mocha', 'coverage'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
@@ -26,6 +26,19 @@ module.exports = function (config) {
     browsers: ['PhantomJS', 'Firefox'],
     browserNoActivityTimeout: 30000,
     singleRun: true,
-    concurrency: Infinity
+    concurrency: Infinity,
+
+    coverageReporter: {
+      reporters: [
+        {
+          type: 'lcov',
+          dir: 'coverage',
+          subdir: function (browser) {
+            return browser.toLowerCase().split(/[ /-]/)[0];
+          }
+        },
+        { type: 'text-summary' }
+      ]
+    }
   });
 };
