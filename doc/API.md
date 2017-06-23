@@ -10,7 +10,7 @@ on crypto.
   * [`pwbox`](#pwbox)
   * [`pwbox.open`](#pwboxopen)
   * [`pwbox.orFalse` and `pwbox.open.orFalse`](#orfalse-variants)
-  * [withCrypto](#withCrypto)
+  * [`withCrypto`](#withcrypto)
 
 ## Constants
 
@@ -154,7 +154,7 @@ If `pwbox.open` is called with a callback, the function returns nothing; it alwa
 before the callback is called. If `pwbox.open` is called without a callback,
 it returns a `Promise` with the decrypted message.
 
-## `orFalse` variants
+## orFalse variants
 
 ```none
 function pwbox.orFalse(message, password, [options], callback)
@@ -175,7 +175,7 @@ functions, `orFalse` variants differ in the following ways:
 
 In all other ways, `orFalse` variants behave exactly as their base counterparts.
 
-## `withCrypto`
+## withCrypto
 
 ```none
 function pwbox.withCrypto(crypto)
