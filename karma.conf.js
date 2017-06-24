@@ -31,7 +31,7 @@ module.exports = function (config) {
     coverageReporter: {
       reporters: [
         {
-          type: 'lcov',
+          type: process.env.CI ? 'lcovonly' : 'lcov',
           dir: 'coverage',
           subdir: function (browser) {
             return browser.toLowerCase().split(/[ /-]/)[0];
