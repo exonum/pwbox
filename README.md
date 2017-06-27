@@ -15,8 +15,8 @@ pwbox is just like NaCl/libsodium's built-in `secretbox`, only it implements
 encryption based on passwords rather on secret keys.
 
 Behind the scenes, pwbox uses crypto-primitves from NaCl/libsodium:
-  * `pwhash_scryptsalsa208sha256` for key derivation
-  * `secretbox` routines for key-based symmetric encryption
+- `pwhash_scryptsalsa208sha256` for key derivation
+- `secretbox` routines for key-based symmetric encryption
 
 **Security Notice.** Use this software at your own risk. You should think carefully
 before using this (or any other) software to ensure browser-based client-side
@@ -25,11 +25,13 @@ security; browser environments are somewhat unsecure.
 ## Getting Started
 
 Import pwbox to your project:
+
 ```javascript
 var pwbox = require('pwbox');
 ```
 
-...and use it similarly to `secretbox` in [TweetNaCl](http://tweetnacl.js.org/):
+...and use it similarly to `secretbox` in [TweetNaCl.js](http://tweetnacl.js.org/):
+
 ```javascript
 var password = 'pleaseletmein';
 var message = new Uint8Array([ 65, 66, 67 ]);
@@ -44,6 +46,7 @@ pwbox(message, password).then(box => {
 
 `pwbox` calls are asynchronous; they support either callbacks or promises.
 The same example as above, with callbacks.
+
 ```javascript
 var password = 'pleaseletmein';
 var message = new Uint8Array([ 65, 66, 67 ]);
@@ -58,6 +61,7 @@ pwbox(message, password, function (err, box) {
 
 You may also invoke `pwbox` and `pwbox.open` with a single-argument callback.
 Just use `.orFalse` after the call:
+
 ```javascript
 var box = // ...
 pwbox.open.orFalse(box, password, function (opened) {
@@ -131,8 +135,8 @@ see the [crypto spec](doc/cryptography.md#parameter-validation) for more details
 ### Backends
 
 pwbox may use one of the following cryptography backends:
-  * [libsodium-wrappers-sumo][libsodium]
-  * [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
+- [libsodium-wrappers-sumo][libsodium]
+- [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
 
 To use a non-default backend, call `pwbox.withCrypto` with `'tweetnacl'`
 or `'libsodium'`; it will return the
