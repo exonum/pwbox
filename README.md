@@ -11,7 +11,8 @@
 [license-image]: https://img.shields.io/github/license/exonum/pwbox.svg?style=flat-square
 [license-url]: https://opensource.org/licenses/Apache-2.0
 
-pwbox is just like NaCl/libsodium's built-in `secretbox`, only it implements
+**pwbox** is a JS library for password-based encryption. It is similar to
+NaCl/libsodium's built-in `secretbox`, only it implements
 encryption based on passwords rather on secret keys.
 
 Behind the scenes, pwbox uses crypto-primitves from NaCl/libsodium:
@@ -44,7 +45,10 @@ pwbox(message, password).then(box => {
 });
 ```
 
-`pwbox` calls are asynchronous; they support either callbacks or promises.
+`pwbox` (encryption routine) and `pwbox.open` (decryption routine) are asynchronous;
+they support either callbacks or promises.
+See [the API docs](doc/API.md) for more details.
+
 The same example as above, with callbacks.
 
 ```javascript
@@ -82,11 +86,17 @@ encrypt binary data (e.g., private keys) without any conversion. If you want
 to encrypt *string* data, you need to convert it to `Uint8Array`. This can be
 accomplished in several ways.
 
-Node provides [`Buffer.from(str, 'utf8')`][node-bufferfrom] method
-and its older version, [`new Buffer(str, 'utf8')`][node-newbuffer].
+#### Using `Buffer`
+
+Node has [`Buffer.from(str, encoding)`][node-bufferfrom] method
+and its older version, [`new Buffer(str, encoding)`][node-newbuffer] to
+convert from strings to byte buffers.
+For the complementary operation, you may use [`buffer.toString(encoding)`][node-buffertostring].
 These methods are also available
 via [the `buffer` package][npm-buffer] in browser environments. As `Buffer`s
 inherit from `Uint8Array`, you may freely pass them as messages.
+
+#### Using `enodeURIComponent`
 
 Browsers [can also use][so-str-to-buffer]
 built-in `enodeURIComponent` and `decodeURIComponent` methods for the conversion:
@@ -113,7 +123,7 @@ function fromUint8Array (buffer) {
 
 ## Options
 
-pwbox supports tuning the scrypt parameters using `opslimit` and `memlimit` from
+**pwbox** supports tuning the scrypt parameters using `opslimit` and `memlimit` from
 libsodium. These parameters determine the amount of computations and
 the RAM usage, respectively, for `pwbox` and `pwbox.open`.
 
@@ -134,7 +144,8 @@ see the [crypto spec](doc/cryptography.md#parameter-validation) for more details
 
 ### Backends
 
-pwbox may use one of the following cryptography backends:
+**pwbox** may use one of the following cryptographic backends:
+
 - [libsodium-wrappers-sumo][libsodium]
 - [tweetnacl][tweetnacl] + [scrypt-async][scrypt-async] (default)
 
@@ -168,9 +179,10 @@ from the **dist** directory of the package.
 
 Copyright (c) 2017, Bitfury Group Limited
 
-pwbox is licensed under [Apache 2.0 license](LICENSE).
+**pwbox** is licensed under [Apache 2.0 license](LICENSE).
 
 [node-bufferfrom]: https://nodejs.org/dist/latest-v6.x/docs/api/buffer.html#buffer_class_method_buffer_from_string_encoding
 [node-newbuffer]: https://nodejs.org/dist/latest-v6.x/docs/api/buffer.html#buffer_new_buffer_string_encoding
+[node-buffertostring]: https://nodejs.org/dist/latest-v6.x/docs/api/buffer.html#buffer_buf_tostring_encoding_start_end
 [npm-buffer]: https://www.npmjs.com/package/buffer
 [so-str-to-buffer]: https://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string
