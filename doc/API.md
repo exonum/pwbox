@@ -6,11 +6,11 @@ on crypto.
 
 ## Table of Contents
 
-  * [Constants](#constants)
-  * [`pwbox`](#pwbox)
-  * [`pwbox.open`](#pwboxopen)
-  * [`pwbox.orFalse` and `pwbox.open.orFalse`](#orfalse-variants)
-  * [`withCrypto`](#withcrypto)
+- [Constants](#constants)
+- [`pwbox`](#pwbox)
+- [`pwbox.open`](#pwboxopen)
+- [`pwbox.orFalse` and `pwbox.open.orFalse`](#orfalse-variants)
+- [`withCrypto`](#withcrypto)
 
 ## Constants
 
@@ -65,20 +65,20 @@ The ovehead length of serialized pwbox compared to the unencrypted message.
 JS object returned when the `'object'` encoding is specified for [`pwbox`](#pwbox).
 Box objects can also be consumed by [`pwbox.open`](#pwboxopen).
 
-  * **algorithm:** Object  
-    Describes the key derivation algorithm used during box creation.
-    
-    * **algorithm.id:** `'scrypt'`  
+- **algorithm:** Object  
+  Describes the key derivation algorithm used during box creation.
+  
+    - **algorithm.id:** `'scrypt'`  
       Algorithm identifier (always `'scrypt'`).
-    * **algorithm.opslimit:** Number  
+    - **algorithm.opslimit:** Number  
       Operations limit used with the key derivation algorithm to create the box.
-    * **algorithm.memlimit:** Number  
+    - **algorithm.memlimit:** Number  
       Memory limit used with the key derivation algorithm to create the box.
 
-  * **salt:** Uint8Array  
-    Cryptographic salt used for key derivation. Salt length is equal to `pwbox.saltLength`.
-  * **ciphertext:** Uint8Array
-    Encrypted message as returned by sodium/NaCl's `secretbox`.
+- **salt:** Uint8Array  
+  Cryptographic salt used for key derivation. Salt length is equal to `pwbox.saltLength`.
+- **ciphertext:** Uint8Array
+  Encrypted message as returned by sodium/NaCl's `secretbox`.
 
 ## pwbox
 
@@ -91,33 +91,34 @@ NaCl's secretbox for symmetric encryption.
 
 ### Arguments
 
-  * **message:** Uint8Array  
-    Message to encrypt
-  * **password:** Uint8Array|String  
-    Password to use for encryption
-  * **options:** Object  
-    Encryption options:
-      * **salt:** [Uint8Array]  
-        Salt to use in derivation. You should *never* specify the salt manually,
-        except for testing purposes. If not specified explicitly, the salt is generated
-        randomly
-      * **opslimit:** [Number]  
-        Operations limit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultOpslimit`.
-        Must be in the interval [`pwbox.minOpslimit`, `pwbox.maxOpslimit`].
-      * **memlimit:** [Number]  
-        RAM usage limit for scrypt with the same meaning as in NaCl/libsodium.
-        The default value is `pwbox.defaultMemlimit`.
-        Must be in the interval [`pwbox.minMemlimit`, `pwbox.maxMemlimit`].
-      * **encoding:** [`'object'`|`'binary'`]  
-        Format for the returned box. `'binary'` (default) means that the box
-        is returned as a `Uint8Array`. `'object'` means that the box returned
-        as an [object](#boxobject).
+- **message:** Uint8Array  
+  Message to encrypt
+- **password:** Uint8Array | String  
+  Password to use for encryption
+- **options:** Object  
+  Encryption options:
 
-  * **callback:** [Function]  
-    Function that will be called when encryption is complete. The callback has
-    a Node standard form `cb(err, box)`, where `err` is a possible execution error,
-    and `box` is the encrypted box
+    - **salt:** [Uint8Array]  
+      Salt to use in derivation. You should *never* specify the salt manually,
+      except for testing purposes. If not specified explicitly, the salt is generated
+      randomly
+    - **opslimit:** [Number]  
+      Operations limit for scrypt with the same meaning as in NaCl/libsodium.
+      The default value is `pwbox.defaultOpslimit`.
+      Must be in the interval [`pwbox.minOpslimit`, `pwbox.maxOpslimit`].
+    - **memlimit:** [Number]  
+      RAM usage limit for scrypt with the same meaning as in NaCl/libsodium.
+      The default value is `pwbox.defaultMemlimit`.
+      Must be in the interval [`pwbox.minMemlimit`, `pwbox.maxMemlimit`].
+    - **encoding:** [`'object'` | `'binary'`]  
+      Format for the returned box. `'binary'` (default) means that the box
+      is returned as a `Uint8Array`. `'object'` means that the box returned
+      as an [object](#boxobject).
+
+- **callback:** [Function]  
+  Function that will be called when encryption is complete. The callback has
+  a Node standard form `cb(err, box)`, where `err` is a possible execution error,
+  and `box` is the encrypted box
 
 > **Tip.** See [the cryptographic spec](cryptography.md#parameter-validation) for
 > restrictions on `opslimit` and `memlimit` parameters and recommendations on
@@ -139,14 +140,14 @@ Decrypts a box that was previously encrypted with `pwbox`.
 
 ### Arguments
 
-  * **box:** Uint8Array|BoxObject  
-    Encrypted box
-  * **password:** Uint8Array|String  
-    Password that was used during password encryption  
-  * **callback:** [Function]  
-    Function that will be called when decryption is complete. The callback has
-    a Node standard form `cb(err, message)`, where `err` is a possible execution error,
-    and `message` is the decrypted message
+- **box:** Uint8Array | BoxObject  
+  Encrypted box
+- **password:** Uint8Array | String  
+  Password that was used during password encryption  
+- **callback:** [Function]  
+  Function that will be called when decryption is complete. The callback has
+  a Node standard form `cb(err, message)`, where `err` is a possible execution error,
+  and `message` is the decrypted message
 
 ### Return value
 
@@ -185,16 +186,16 @@ Creates a new `pwbox` suite with the specific cryptographic backend.
 
 ### Arguments
 
-  * **crypto:** `'tweetnacl'`|`'libsodium'`|Object  
-    Cryptographic module to use. Allowed string values are:
-    
-      * `'tweetnacl'` (uses [the eponymous lib][tweetnacl] +
-        [`scrypt-async`][scrypt-async] for
-        the `scrypt` function)
-      * `'libsodium'` (uses [`libsodium-wrappers-sumo`][libsodium]).
+- **crypto:** `'tweetnacl'` | `'libsodium'` | Object  
+  Cryptographic module to use. Allowed string values are:
+  
+    - `'tweetnacl'` (uses [the eponymous lib][tweetnacl] +
+      [`scrypt-async`][scrypt-async] for
+      the `scrypt` function)
+    - `'libsodium'` (uses [`libsodium-wrappers-sumo`][libsodium]).
 
-    Alternatively, you may pass a cryptographic module with
-    [the predefined interface](#crypto-interface).
+  Alternatively, you may pass a cryptographic module with
+  [the predefined interface](#crypto-interface).
 
 ### Crypto interface
 
@@ -209,16 +210,17 @@ function crypto.secretbox.open(box, nonce, key)
 ```
 
 where:
-  * **randomBytes** generates cryptographically secure random bytes in the form
-    of a `Uint8Aray` of a specified length
-  * **scrypt** implements the password-based derivation function and calls
-    a callback on completion. `opslimit` and `memlimit` options from `pwbox`
-    are passed to the `options` unchanged. `options` also contains `dkLength`,
-    the required length of a derived key in bytes
-  * **secretbox** and **secretbox.open** implement symmetric encryption/decryption
-    respectively. All their arguments are `Uint8Array`s. `key` and `nonce`
-    have length 32 and 24 bytes, respectively, while `message`/`box` may have
-    variable length
+
+- **randomBytes** generates cryptographically secure random bytes in the form
+  of a `Uint8Aray` of a specified length
+- **scrypt** implements the password-based derivation function and calls
+  a callback on completion. `opslimit` and `memlimit` options from `pwbox`
+  are passed to the `options` unchanged. `options` also contains `dkLength`,
+  the required length of a derived key in bytes
+- **secretbox** and **secretbox.open** implement symmetric encryption/decryption
+  respectively. All their arguments are `Uint8Array`s. `key` and `nonce`
+  have length 32 and 24 bytes, respectively, while `message`/`box` may have
+  variable length
 
 ### Return value
 

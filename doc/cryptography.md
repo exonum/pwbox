@@ -2,18 +2,22 @@
 
 pwbox implements a [RFC 8018][rfc8018]-like scheme for password-based encryption
 and decryption. The scheme consists of two steps:
- 1. Derive the key `DK` from the password, using `salt` as the cryptographic
-    salt
- 2. Use `DK` as the input to the symmetric encryption scheme to perform encryption
-    or decryption
+
+1. Derive the key `DK` from the password, using `salt` as the cryptographic
+  salt
+2. Use `DK` as the input to the symmetric encryption scheme to perform encryption
+  or decryption
  
 In other words, the encryption operation looks like
+
 ```none
 salt = randomBytes(SALT_LENGTH)
 DK = KDF(params; password, salt)
 ciphertext = Enc(DK, plaintext)
 ```
+
 and decryption is
+
 ```none
 DK = KDF(params; password, salt)
 plaintext = Dec(DK, ciphertext)
@@ -22,14 +26,15 @@ plaintext = Dec(DK, ciphertext)
 ## Choice of crypto-primitives
 
 pwbox uses:
-  * **scryptsalsa208sha256** from the NaCl/libsodium fame as the key derivation
-    function. scrypt is a well-studied KDF, [introduced in 2009][scrypt].
-    scrypt is *memory-intensive*, i.e., the speed of its computation is limited
-    by the RAM-CPU bandwidth and the RAM capacity rather than CPU speed alone.
-    This makes scrypt harder to compute on specialized [ASICs][asic] and
-    correspondingly increases the cost of the attacks on the scheme
-  * **XSalsa20-Poly1305** authenticated encryption scheme, which consists
-    of XSalsa20 stream cipher and Poly1305 message authentication code (MAC)
+
+- **scryptsalsa208sha256** from the NaCl/libsodium fame as the key derivation
+  function. scrypt is a well-studied KDF, [introduced in 2009][scrypt].
+  scrypt is *memory-intensive*, i.e., the speed of its computation is limited
+  by the RAM-CPU bandwidth and the RAM capacity rather than CPU speed alone.
+  This makes scrypt harder to compute on specialized [ASICs][asic] and
+  correspondingly increases the cost of the attacks on the scheme
+- **XSalsa20-Poly1305** authenticated encryption scheme, which consists
+  of XSalsa20 stream cipher and Poly1305 message authentication code (MAC)
     
 The salt length is 32 bytes according to the scryptsalsa208sha256
 specification. The salt is generated using the `randomBytes` routine from
