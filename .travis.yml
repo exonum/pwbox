@@ -13,15 +13,14 @@ language: node_js
 node_js:
   - "4"
   - "6"
+  - "8"
 env:
   - TEST_SUITE=unittests
-  - TEST_SUITE=browsers
-  - TEST_SUITE=demo
 matrix:
-  exclude:
-    - node_js: "4"
+  include:
+    - node_js: "6"
       env: TEST_SUITE=browsers
-    - node_js: "4"
+    - node_js: "6"
       env: TEST_SUITE=demo
 
 before_script:
