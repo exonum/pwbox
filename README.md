@@ -177,7 +177,7 @@ from the **dist** directory of the package.
 
 ## License
 
-Copyright (c) 2017, Bitfury Group Limited
+Copyright (c) 2017, Exonum Team
 
 **pwbox** is licensed under [Apache 2.0 license](LICENSE).
 
