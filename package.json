@@ -34,7 +34,7 @@
     "scrypt",
     "argon2i"
   ],
-  "author": "Alex Ostrovski <ostrovski.alex@gmail.com>",
+  "author": "Exonum Team <exonum@bitfury.com>",
   "license": "Apache-2.0",
   "dependencies": {
     "libsodium-wrappers-sumo": "^0.5.1",
