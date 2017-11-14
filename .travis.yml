@@ -40,6 +40,11 @@ script:
   - |
     case "$TEST_SUITE" in
       unittests ) npm test;;
-      browsers ) npm run test-browser;;
+      browsers ) npm run coverage-browsers;;
       demo ) npm run test-demo;;
     esac
+after_script:
+  - |
+    if [[ "$TEST_SUITE" == "browsers" ]]; then
+      cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+    fi
