@@ -6,17 +6,16 @@
   "files": [
     "index.js",
     "lite.js",
-    "dist",
     "examples",
     "lib",
-    "doc"
+    "doc",
+    "dist"
   ],
   "directories": {
     "doc": "doc",
     "lib": "lib",
     "example": "examples"
   },
-  "private": true,
   "scripts": {
     "test": "mocha test/test.all.js",
     "test-browser": "karma start",
@@ -31,8 +30,7 @@
     "libsodium",
     "hash",
     "pwhash",
-    "scrypt",
-    "argon2i"
+    "scrypt"
   ],
   "author": "Exonum Team <exonum@bitfury.com>",
   "license": "Apache-2.0",
