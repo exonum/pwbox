@@ -5,7 +5,7 @@
 [![License][license-image]][license-url]
 
 [travis-image]: https://img.shields.io/travis/exonum/pwbox.svg?style=flat-square
-[travis-url]: https://travis-ci.com/exonum/pwbox
+[travis-url]: https://travis-ci.org/exonum/pwbox
 [code-style-image]: https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square
 [code-style-url]: https://github.com/Flet/semistandard
 [license-image]: https://img.shields.io/github/license/exonum/pwbox.svg?style=flat-square
