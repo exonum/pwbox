@@ -49,6 +49,20 @@ describe('serializer', function () {
       expect(s).to.have.lengthOf(48 + obj.ciphertext.length);
     });
 
+    it('should throw if algorithm ID contains non-ASCII chars', function () {
+      var obj = {
+        algorithm: {
+          id: 'алго',
+          opslimit: 524288,
+          memlimit: 16777216
+        },
+        salt: new Uint8Array(32),
+        ciphertext: new Uint8Array(40)
+      };
+
+      expect(() => serializer.serialize(obj)).to.throw(Error, /ascii/i);
+    });
+
     it('should serialize algo id with trailing zeros', function () {
       var s = serializer.serialize(obj);
       expect(s.subarray(0, 8)).to.equalBytes([
@@ -126,6 +140,13 @@ describe('serializer', function () {
 
       var deser = serializer.deserialize(buffer);
       expect(deser.algorithm.id).to.equal('AB');
+    });
+
+    it('should deserialize algorithm ID without trailing zeros', function () {
+      var buffer = new Uint8Array(100);
+      buffer.subarray(0, 8).set([65, 66, 67, 68, 69, 70, 71, 72]);
+      var deser = serializer.deserialize(buffer);
+      expect(deser.algorithm.id).to.equal('ABCDEFGH');
     });
   });
 });
