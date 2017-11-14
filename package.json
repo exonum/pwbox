@@ -1,6 +1,6 @@
 {
   "name": "pwbox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Password-based encryption for Node and browsers",
   "main": "index.js",
   "files": [
