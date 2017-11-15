@@ -17,28 +17,52 @@ limitations under the License.
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+  <meta name="keywords" content="scrypt,encryption,passwords">
+  <meta name="description" content="Demo of pwbox password-based encryption">
   <title>pwbox Demo</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   <style>
-  body {
+  .content {
     max-width: 1080px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 1rem;
   }
 
   .msg-text {
     height: 7.5rem;
     resize: none;
   }
+
+  .body-header {
+    padding: 1rem;
+    background: #f4f4f4;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+  }
+
+  .page-footer {
+    margin: 4rem -0.5rem 0 -0.5rem;
+    padding: 2rem 0 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.15);
+  }
+
+  .valign-with-btn {
+    margin-top: 0.4rem !important;
+  }
   </style>
   <script src="../dist/pwbox-lite.min.js"></script>
 </head>
 <body>
-  <h1>pwbox</h1>
-  <p class="lead">pwbox is a library similar to <a href="http://tweetnacl.js.org/">NaCl</a>/<a href="https://download.libsodium.org/doc/">libsodium</a>'s built-in secretbox, only it implements
-  encryption based on passwords rather on secret keys.</p>
+  <header class="body-header">
+    <div class="content">
+      <h1>pwbox</h1>
+      <p class="lead">pwbox is a library similar to <a href="http://tweetnacl.js.org/">NaCl</a>/<a href="https://download.libsodium.org/doc/">libsodium</a>'s built-in secretbox, only it implements
+      encryption based on passwords rather on secret keys.</p>
+    </div>
+  </header>
 
-  <div class="container">
+  <div class="content"><div class="container">
     <form>
       <div class="row form-group">
         <label for="password">Password</label>
@@ -51,11 +75,11 @@ limitations under the License.
           <label for="message">Message</label>
           <textarea id="message" class="form-control msg-text" placeholder="Message to encrypt"></textarea>
           <div class="row my-3">
-            <div class="col-3">
+            <div class="col-4">
               <button type="button" id="encrypt" class="btn btn-primary" title="Encrypt message into a box">Encrypt</button>
             </div>
-            <div class="col-9">
-              <div class="form-control-feedback" id="encrypt-feedback"></div>
+            <div class="col-8 text-right">
+              <div class="form-control-feedback valign-with-btn" id="encrypt-feedback"></div>
             </div>
           </div>
         </div>
@@ -63,11 +87,11 @@ limitations under the License.
           <label for="box">Box</label>
           <textarea id="box" class="form-control msg-text" placeholder="Encrypted box (hex)"></textarea>
           <div class="row my-3">
-            <div class="col-3">
+            <div class="col-4">
               <button type="button" id="decrypt" class="btn btn-primary" title="Decrypt encrypted box">Decrypt</button>
             </div>
-            <div class="col-9">
-              <div class="form-control-feedback" id="decrypt-feedback"></div>
+            <div class="col-8 text-right">
+              <div class="form-control-feedback valign-with-btn" id="decrypt-feedback"></div>
             </div>
           </div>
         </div>
@@ -113,7 +137,15 @@ limitations under the License.
         </div>
       </div>
     </form>
-  </div>
+
+    <footer class="page-footer small text-muted">
+      <span class="copyright">© 2017 Exonum Team</span>
+      <div class="float-none float-sm-right">
+        <a href="https://github.com/exonum/pwbox">GitHub</a>&nbsp;•
+        <a href="https://npmjs.com/package/pwbox">Npm</a>
+      </div>
+    </footer>
+  </div></div>
 
   <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
@@ -200,10 +232,10 @@ limitations under the License.
 
       var group;
       if (op === 'encrypt') {
-        encryptFeedback.text('Successfully encrypted message.');
+        encryptFeedback.text('Successfully encrypted.');
         group = $('#encrypt-group');
       } else {
-        decryptFeedback.text('Successfully decrypted box.');
+        decryptFeedback.text('Successfully decrypted.');
         group = $('#decrypt-group');
       }
 
@@ -302,7 +334,7 @@ limitations under the License.
 
       box = fromHexString(box);
       if (!box) {
-        showError('decrypt', new TypeError('Invalid hex string for box'));
+        showError('decrypt', new TypeError('Invalid hex string'));
         toggleControls(true);
         return;
       }
