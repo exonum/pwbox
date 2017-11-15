@@ -1,11 +1,14 @@
 # Password-Based Encryption for Node and Browsers
 
 [![Build status][travis-image]][travis-url]
+[![Code coverage][coveralls-image]][coveralls-url]
 [![Code style][code-style-image]][code-style-url]
 [![License][license-image]][license-url]
 
 [travis-image]: https://img.shields.io/travis/exonum/pwbox.svg?style=flat-square
 [travis-url]: https://travis-ci.org/exonum/pwbox
+[coveralls-image]: https://img.shields.io/coveralls/exonum/pwbox.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/github/exonum/pwbox
 [code-style-image]: https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square
 [code-style-url]: https://github.com/Flet/semistandard
 [license-image]: https://img.shields.io/github/license/exonum/pwbox.svg?style=flat-square

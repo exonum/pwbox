@@ -53,6 +53,17 @@ function describeImplementation (pwbox, pwboxName) {
       return pwbox(message, password, options, callback);
     }
 
+    it('should throw when called with promise and Promise isn\'t present', function () {
+      var _Promise = Promise;
+      try {
+        delete global.Promise;
+        expect(typeof Promise).to.equal('undefined', 'Cannot delete Promise');
+        expect(() => pwbox(message, password)).to.throw(Error, /Promise/i);
+      } finally {
+        global.Promise = _Promise;
+      }
+    });
+
     it('should run with promise and no options', function () {
       var promise = pwbox(message, password);
       expect(promise).to.be.instanceof(Promise);
