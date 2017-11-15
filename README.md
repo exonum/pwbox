@@ -3,7 +3,7 @@
 [![Build status][travis-image]][travis-url]
 [![Code coverage][coveralls-image]][coveralls-url]
 [![Code style][code-style-image]][code-style-url]
-[![License][license-image]][license-url]
+[![Demo][demo-image]][demo-url]
 
 [travis-image]: https://img.shields.io/travis/exonum/pwbox.svg?style=flat-square
 [travis-url]: https://travis-ci.org/exonum/pwbox
@@ -11,8 +11,8 @@
 [coveralls-url]: https://coveralls.io/github/exonum/pwbox
 [code-style-image]: https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square
 [code-style-url]: https://github.com/Flet/semistandard
-[license-image]: https://img.shields.io/github/license/exonum/pwbox.svg?style=flat-square
-[license-url]: https://opensource.org/licenses/Apache-2.0
+[demo-image]: https://img.shields.io/badge/demo-live-blue.svg?style=flat-square
+[demo-url]: https://exonum.github.io/pwbox/
 
 **pwbox** is a JS library for password-based encryption. It is similar to
 NaCl/libsodium's built-in `secretbox`, only it implements
@@ -177,6 +177,12 @@ from the **dist** directory of the package.
 [libsodium]: https://www.npmjs.com/package/libsodium-wrappers-sumo
 [tweetnacl]: https://www.npmjs.com/package/tweetnacl
 [scrypt-async]: https://www.npmjs.com/package/scrypt-async
+
+## Examples
+
+The **examples** directory of the package contains
+a [web page](examples/demo.html) allowing to test **pwbox** with web UI.
+A live version of this page is hosted [here](https://exonum.github.io/pwbox/).
 
 ## License
 
