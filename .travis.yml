@@ -48,13 +48,23 @@ after_script:
       cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     fi
 
+before_deploy:
+  - bash ./gh-pages.sh
 deploy:
-  skip_cleanup: true
-  provider: npm
-  email: exonum.bitfury@gmail.com
-  api_key:
-    secure: AYv5TPzyt9RJsP8M1FgLwB9W3Eyknd0yP1myCwydKcbLgbYG+S9siLUYpyy6gMM0ie6KrAynwUA4vIivAAa88kGjAFfP7DnQvq7fAJ7Rms4m0FOT/wZzu0gcWNlWOCD2MV33ArB9nbqyxCh2CIHjNI/RipnGAW1xhZsNb5S3VVyR8P5D5ZzN8Kejf82aYGKT7W/QEhN+mMSuHoZk6hWWCOYVYBIkrAH5iLtfwG6zTnxPCsQLGjcW6ntHXRqlhFzB4t6Nv65N0rW3NVGlhFCVKqJ3bs/gBns4e7mAGv+PRy8OssQ6PIdPZyunVvXZ/a943fwQRMSlUS9Rhq3+oO0o1hq+Bs5lObwRFtDS4D23fm/7RET1JzypAC0uKo81Ewby0Zfxka5M0vNG03DnHGaS26QzJFpnfjbzst/0uPCybsxSsNEw2V/gOhd6LNH+WDQHK3tV8KtyU31NpRTMApz9dwDywZHssPBY4SqeiXEo1ZgUrr2qCJ1iYSHytXSoqAbBhCl9+eC5hKXgR9k5djJzR/8NLGGYdgTdG2yfDLpJHg4lDREmI5L1+49DSHbwIW3Eur8LJXL8C1/3WblYlW42uzzgV/CGnwBo3cZM2kLNtd3jIiEaW1tgWET9OIDXnR9mWdMlm6M0CSHZ87L1MeEtpNbAvaa0XbHPuADyRquuuY8=
-  on:
-    branch: master
-    tags: true
-    node: '8'
+  - provider: pages
+    skip_cleanup: true
+    local_dir: .gh-pages
+    github_token:
+      secure: "h88YucbPp3lBUBDR5FZOq799ea4rxXM9NAjaD8rr/Rh/zA8ZrWStkFPnH2guc5Sfr16b+0prI5TZjHPcmeJ/0ISOxhGYXjOG+BwNstxZI30QfhjEFoliJAl/VmD0bQ+Ksh1RUsogd8/NTgeKbx9Jcp4gbLgL5YIPquA+kISZWVyfcDrIdPzrGqDuljsBYG/fwLox4fyM7PXWucaY2J5zYUPBEUgyXPA1Uaa1fQdkyZX47fscC2tjSmfiImvoEs5/fhGGHOyxbaTuJn+w+cvijJcm2ptwLb4LOJa+mjdqzUXT81/gY0uS+FoXNF/XOgXPltIx8lAw9iz34qPKBDUDdnRTLqz49eTRGltiP8QP/RijP4H62isuBfu6goyv4UBBaJx+LLh8IBjnxXyLb0g6ovwSdmGiN+cS9e3gQl/TVwnICw5s8xl7m7hJFTdnJsIUBfQnVjViCXdfScDMEXmBLPs/37lax9c3jYZQuUZCPdXbQv0DGtPw//Tz+hs2+p9ldgPXjxSXy2PUDMk+jaowyvXt6jQZa3HACS2OVe7szy8/2QP8S3TKyOAhwXKmLxFkU8BfxBb5kFFJ9hmr0J6EE/ubSgXSj8yOQh0e1rHzjUVD2DZCgQTYIo+yMXGFXfEadEfg6XcHXUT431eO70kse/EMbwcZHSivnhY28Zl0Y2I="
+    on:
+      branch: master
+      node: '8'
+  - skip_cleanup: true
+    provider: npm
+    email: exonum.bitfury@gmail.com
+    api_key:
+      secure: AYv5TPzyt9RJsP8M1FgLwB9W3Eyknd0yP1myCwydKcbLgbYG+S9siLUYpyy6gMM0ie6KrAynwUA4vIivAAa88kGjAFfP7DnQvq7fAJ7Rms4m0FOT/wZzu0gcWNlWOCD2MV33ArB9nbqyxCh2CIHjNI/RipnGAW1xhZsNb5S3VVyR8P5D5ZzN8Kejf82aYGKT7W/QEhN+mMSuHoZk6hWWCOYVYBIkrAH5iLtfwG6zTnxPCsQLGjcW6ntHXRqlhFzB4t6Nv65N0rW3NVGlhFCVKqJ3bs/gBns4e7mAGv+PRy8OssQ6PIdPZyunVvXZ/a943fwQRMSlUS9Rhq3+oO0o1hq+Bs5lObwRFtDS4D23fm/7RET1JzypAC0uKo81Ewby0Zfxka5M0vNG03DnHGaS26QzJFpnfjbzst/0uPCybsxSsNEw2V/gOhd6LNH+WDQHK3tV8KtyU31NpRTMApz9dwDywZHssPBY4SqeiXEo1ZgUrr2qCJ1iYSHytXSoqAbBhCl9+eC5hKXgR9k5djJzR/8NLGGYdgTdG2yfDLpJHg4lDREmI5L1+49DSHbwIW3Eur8LJXL8C1/3WblYlW42uzzgV/CGnwBo3cZM2kLNtd3jIiEaW1tgWET9OIDXnR9mWdMlm6M0CSHZ87L1MeEtpNbAvaa0XbHPuADyRquuuY8=
+    on:
+      branch: master
+      tags: true
+      node: '8'
