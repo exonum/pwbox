@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 The Exonum Team
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>pwbox Benchmarks</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <style>
+  .content {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .body-header {
+    padding: 1rem;
+    background: #f4f4f4;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+  }
+
+  .page-footer {
+    margin: 4rem -0.5rem 0 -0.5rem;
+    padding: 2rem 0 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.15);
+  }
+  </style>
+</head>
+<body>
+  <header class="body-header">
+    <div class="content">
+      <h1>pwbox</h1>
+      <p class="lead">pwbox is a library similar to <a href="http://tweetnacl.js.org/">NaCl</a>/<a href="https://download.libsodium.org/doc/">libsodium</a>'s built-in secretbox, only it implements
+      encryption based on passwords rather on secret keys.</p>
+    </div>
+  </header>
+
+  <div class="content"><div class="container">
+    <h2>Benchmark
+      <button type="button" id="bench" class="badge btn btn-primary" title="Start or resume benchmarking">Start</button>
+      <button type="button" id="abort" class="badge btn btn-warning" title="Stop benchmarking" style="display: none;">Stop</button>
+    </h2>
+
+    <p>This benchmark tests <strong>pwbox</strong> encryption speed on messages with different sizes, from 32B to 64kB. On desktops, the latency of tests should be order of 100 ms; on mobile platforms – order of 1,000 ms.</p>
+
+    <div class="row my-4">
+      <div class="col-12">
+        <div class="progress">
+          <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1"></div>
+        </div>
+        <div class="small mt-1"><em id="progress-text">&nbsp;</em></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 center">
+        <div id="chart" style="height: 350px;"></div>
+      </div>
+    </div>
+
+    <footer class="page-footer small text-muted">
+      <span class="copyright">© 2017 Exonum Team</span>
+      <div class="float-none float-sm-right">
+        <a href="https://github.com/exonum/pwbox">GitHub</a>&nbsp;•
+        <a href="https://npmjs.com/package/pwbox">Npm</a>
+      </div>
+    </footer>
+  </div></div>
+
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js" integrity="sha256-IyWBFJYclFY8Pn32bwWdSHmV4B9M5mby5bhPHEmeY8w=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/benchmark@2.1.4/benchmark.js" integrity="sha256-OwQvB2XVQ7dupe7zIN3bwO6Lf2ofiZ25M1OVcenWqL0=" crossorigin="anonymous"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-more.js"></script>
+  <script src="../dist/pwbox-lite.min.js"></script>
+
+  <script>
+  /* eslint-env browser,jquery */
+  /* global pwbox, Benchmark, Highcharts */
+  $(function () {
+    // Tested message lengths
+    var messageSizes = [
+      32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+    ];
+
+    function createBenchmarks () {
+      var password = 'correct horse battery staple';
+      // Interval (in seconds) between bench cycles
+      var testDelay = 0.025;
+
+      var suite = new Benchmark.Suite('pwbox.withCrypto(\'tweetnacl\')');
+
+      messageSizes.forEach(function (len) {
+        var data = new Uint8Array(len);
+        for (var i = 0; i < data.length; i++) {
+          data[i] = Math.floor(Math.random() * 256);
+        }
+
+        suite.add('' + len, {
+          defer: true,
+          delay: testDelay,
+          fn: function (deferred) {
+            pwbox(data, password, function (err, box) {
+              if (err) throw err;
+
+              if (!(box instanceof Uint8Array) || box.length !== len + pwbox.overheadLength) {
+                throw new Error('Invalid box returned');
+              }
+              deferred.resolve();
+            });
+          },
+          onCycle: onBenchmarkCycle
+        });
+      });
+
+      return suite;
+    }
+
+    function createChart (benchmarks) {
+      $('#chart').highcharts({
+        chart: { type: '' },
+        title: { text: 'pwbox latency, ms' },
+        legend: {
+          enabled: false
+        },
+        tooltip: {
+          crosshairs: true,
+          shared: true,
+          valueDecimals: 0,
+          valueSuffix: ' ms',
+          headerFormat: '<span style="font-size: 10px">{point.key}B message</span><br/>'
+        },
+        xAxis: {
+          type: 'logarithmic',
+          min: parseInt(benchmarks[0].name) * 0.5,
+          max: parseInt(benchmarks[benchmarks.length - 1].name) * 1.5,
+          title: { text: 'Message size, bytes' }
+        },
+        yAxis: {
+          title: { text: null }
+        },
+        series: [{
+          name: 'Mean',
+          data: [],
+          zIndex: 1,
+          marker: {
+            fillColor: 'white',
+            lineWidth: 2,
+            lineColor: Highcharts.getOptions().colors[0]
+          }
+        }, {
+          name: '95% confidence',
+          data: [],
+          type: 'arearange',
+          lineWidth: 0,
+          linkedTo: ':previous',
+          color: Highcharts.getOptions().colors[0],
+          fillOpacity: 0.3,
+          zIndex: 0,
+          marker: {
+            enabled: false
+          }
+        }]
+      });
+
+      return Highcharts.charts[Highcharts.charts.length - 1];
+    }
+
+    /**
+     * Function called after each benchmark run (i.e., at least 5 times for each benchmark).
+     */
+    function onBenchmarkCycle (event) {
+      $('#progress-text').text('Running: message length = ' +
+        event.target.name +
+        ', run #' + event.target.stats.sample.length
+      );
+    }
+
+    /**
+     * Function called after each suite run (i.e., once per benchmark).
+     */
+    function onSuiteCycle (event) {
+      if (event.target.aborted) {
+        return;
+      }
+
+      // Update chart
+      var x = parseInt(event.target.name);
+      var mean = event.target.stats.mean * 1000;
+      var moe = event.target.stats.moe * 1000;
+      chart.series[0].addPoint([x, mean], false);
+      chart.series[1].addPoint([x, mean - moe, mean + moe]);
+
+      // Update the progress bar
+      var completed = messageSizes.indexOf(parseInt(event.target.name)) + 1;
+      $('#progress').css({
+        width: (completed / suiteLength * 100).toFixed(2) + '%'
+      }).prop('aria-valuenow', completed);
+    }
+
+    // Initialization
+    var suite = createBenchmarks();
+    var suiteLength = suite.length;
+    var chart = createChart(suite);
+
+    $('#progress').prop('aria-valuemax', suiteLength);
+
+    $('#bench').click(function () {
+      $('#bench').hide();
+      $('#abort').show();
+
+      suite = suite.filter(function (bench) { return bench.count === 0; });
+      suite
+        .on('cycle', onSuiteCycle)
+        .on('complete', function () {
+          var benchesRemain = suite.reduce(function (acc, bench) {
+            return acc || (bench.count === 0);
+          }, false);
+
+          $('#bench').toggle(benchesRemain);
+          $('#abort').hide();
+
+          if (!benchesRemain) {
+            $('#progress-text').text('Benchmarking complete!');
+          }
+        })
+        .run();
+    });
+
+    $('#abort').click(function () {
+      suite.abort();
+    });
+  });
+  </script>
+</body>
+</html>
