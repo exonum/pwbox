@@ -52,6 +52,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-bytes": "^0.1.1",
+    "commander": "^2.12.2",
     "coveralls": "^3.0.0",
     "dirty-chai": "^1.2.2",
     "istanbul": "^0.4.5",
