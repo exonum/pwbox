@@ -2,59 +2,55 @@ dist: trusty
 sudo: false
 cache:
   directories:
-    - node_modules
+  - node_modules
 branches:
   only:
-    - master
-    # tags
-    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-
+  - master
+  - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
 language: node_js
 node_js:
-  - "4"
-  - "6"
-  - "8"
+- '6'
+- '8'
+- '10'
 env:
-  - TEST_SUITE=unittests
+- TEST_SUITE=unittests
 matrix:
   include:
-    - node_js: "6"
-      env: TEST_SUITE=browsers
-    - node_js: "6"
-      env: TEST_SUITE=demo
-
+  - node_js: '6'
+    env: TEST_SUITE=browsers
+  - node_js: '6'
+    env: TEST_SUITE=demo
 before_script:
-  - npm install -g mocha-cli
-  # Launch a virtual display imitation for Firefox
-  - |
-    case "$TEST_SUITE" in
-      browsers )
-        npm install -g karma-cli
-        export DISPLAY=:99.0
-        sh -e /etc/init.d/xvfb start
-        sleep 3;;
-    esac
+- npm install -g mocha-cli
+- |
+  case "$TEST_SUITE" in
+    browsers )
+      npm install -g karma-cli
+      export DISPLAY=:99.0
+      sh -e /etc/init.d/xvfb start
+      sleep 3;;
+  esac
 script:
-  - npm run-script lint
-  - |
-    case "$TEST_SUITE" in
-      unittests ) npm test;;
-      browsers ) npm run coverage-browsers;;
-      demo ) npm run test-demo;;
-    esac
+- npm run-script lint
+- |
+  case "$TEST_SUITE" in
+    unittests ) npm test;;
+    browsers ) npm run coverage-browsers;;
+    demo ) npm run test-demo;;
+  esac
 after_script:
-  - |
-    if [[ "$TEST_SUITE" == "browsers" ]]; then
-      cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-    fi
-
+- |
+  if [[ "$TEST_SUITE" == "browsers" ]]; then
+    cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+  fi
 deploy:
-  skip_cleanup: true
   provider: npm
   email: exonum.bitfury@gmail.com
   api_key:
-    secure: GImC9xmt5jR1ZPWv5IetfK9QGPf0OTBwwHF5OI7XIl4k07hOpfSHr3E2EAgAliEROYpH7yjzhgW3TDahTy7ZfkqbgG3o35nqFYgk9w0CtMk3l4OkvDl03ZiNQAOisGDgu58rmt4Zhjy/jVDNQdGNL1Osu27kigy3fYne09quIHhGh0a9+B7tW552SE12Q4AVaBEDVlK2mrTE1DsrIyKKO/j7L34dQVQXenAq7V+hQTStjzjGK/6nkI/JRfdURCYKlZ1viXixNrwPkdFHPUATwY2A6H8auQl38Qcv67yXCqGHF1zyIkMJeV5C1d8D9SqV3RAvp0+rObrY2gB2LZP/cQ/s8ddqJvkeQEuDsIWmNsVyyKnqLKtASWtIFk6/HB/1GfnYub1me72ciptkHxP35802u5lL/jfU5HalUk7hX8nS+aqdsj/Q91XjTXulaz/yvG1eqA4/GfDHmz35KnEty1xUWZ3FQuKZrkV7i+Gx6j/FMgbm0k5hJY5D5tcZXWxGmmRZraPWNIB2YKRL6z4LaNmvO8GYvkcfCW75DOaNj/ZF+HHBBPKiuCknh8Gz7ckMSvbo3bXGJZmu7Xln1BjWJV5iOPG8UmO9gZHIABE/erkZ5oOhX5sfYVq40qRkexo1nZqZTcey26S4ZqtQUaqkygmzNzC02FzLe5nu+1t7aL4=
+    secure: ZlscbOycAUpD7EpJNZSPC1KtnX4JbV2D2A0/vppmJCcrSKatKWXaVeRMj2EhF8zEW5/xXNU0XzGJMNrQxtnNZ8fJY8r1QkX0TzwiTJ/rkUsE0tP5igTbju3I4ErbucFQs35wbpfJZP4kpOvcIgTBRSbGQ3V8zHGCb14h8c1MXRrlZ/uEfx7jXGvqsy2AWPlJ7mtEeqrYXuUFfuMQHrDZQP1s0P6FvUwnCbrSIFuo/uEO/iSnisDTmlujunaviMa7jx2qIKN5BdrgAfhSQGHpNNbrOT9CmWKvsIr9MNoWbbGqdTueafmopdzV6Im7lxSgSyhun7L85qz3r4IPOxWcofYWqrlNMvWBNIxerzUXj6qLTQX1bN3w9T8bbIhqxdiu0+L/reViWLi+Y9HEODrwk/TCiaQcTI0UPEf9/PEIdW6NXdcY0eTzbQzhAd9S62pzkfagSe6+v4vG4z+EfknRx2v/K7qXUwUG/GUTmr7RieUuLFAuioQe6GaYo2Mx5wQ7GDra0viwZR6q3LqEfOA4j4I/n73g192NQPxnq89AHQRdYtmyI53pOG0h/qOS2DyGS1QYKwrTwg8COjmHePjNQvsFp8oQDOTTCe/QRrkw1lJ+q6XproYUTBPdiej+OW7ooy39W/AzW213JHUPXxmC9WxCVtTKGmLH/+B7/OdLABM=
   on:
     branch: master
     tags: true
+    repo: exonum/pwbox
     node: '8'
+  skip_cleanup: true
